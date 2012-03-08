@@ -23,6 +23,21 @@ extern CAppModule _Module;
 #include <atlctrls.h>
 #include <atldlgs.h>
 
+// for libcurl 
+#include "../deps/libcurl/include/curl/curl.h"
+#pragma comment(lib, "../deps/libcurl/lib/libcurl.lib")
+
+// for sqlite
+#include "../deps/sqlite/sqlite3.h"
+
+// for f_in_box 
+#include "../deps/finbox/include/f_in_box.h"
+#pragma comment(lib, "../deps/finbox/lib/f_in_box.lib")
+
+// for SkinSE
+#include "../deps/SkinSE/include/SkinSE.h"
+#pragma comment(lib, "../deps/SkinSE/lib/SkinSEu.lib")
+
 #if defined _M_IX86
   #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #elif defined _M_IA64

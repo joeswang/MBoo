@@ -1,282 +1,204 @@
-// Microsoft Visual C++ generated resource script.
-//
-#include "resource.h"
+#ifndef IDOK
+  #define IDOK 1
+#endif
+#ifndef IDCANCEL
+  #define IDCANCEL 2
+#endif
+#ifndef IDC_STATIC
+  #define IDC_STATIC -1
+#endif
 
-#define APSTUDIO_READONLY_SYMBOLS
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 2 resource.
-//
+#include "resource.h"
 #include "atlres.h"
 
-/////////////////////////////////////////////////////////////////////////////
-#undef APSTUDIO_READONLY_SYMBOLS
+LANGUAGE 9,1
 
-/////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
+IDR_MAINFRAME MENU
 BEGIN
-    "resource.h\0"
+  POPUP "文件(&F)"
+  BEGIN
+    MENUITEM "打开(&O)\tCtrl+O",ID_FILE_OPEN
+    MENUITEM SEPARATOR
+    MENUITEM "选项(&P)\tCtrl+P",ID_FILE_OPTION
+    MENUITEM SEPARATOR
+    MENUITEM "退出(&X)",ID_APP_EXIT
+  END
+  POPUP "视频(&V)"
+  BEGIN
+    MENUITEM "捕获图像(&C)\tCtrl+Z",ID_EDIT_UNDO
+  END
+  POPUP "帮助(&H)"
+  BEGIN
+    MENUITEM "关于麦宝(&A)",ID_APP_ABOUT
+  END
 END
 
-2 TEXTINCLUDE 
+IDR_MAINFRAME ICON DISCARDABLE "res/MBoo.ico"
+
+IDD_DLG_PANEL DIALOGEX 0,0,522,57
+FONT 8,"MS Shell Dlg",400,0,1
+STYLE WS_CHILDWINDOW|WS_VISIBLE|WS_SYSMENU|DS_SHELLFONT
 BEGIN
-    "#include ""atlres.h""\r\n"
-    "\0"
+  CONTROL "",IDC_PANEL_BTN_STARTPAUSE,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP,0,0,38,14
+  CONTROL "",IDC_PANEL_BTN_STOP,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP,39,0,38,14
+  CONTROL "",IDC_PANEL_SLD_PROGRESS,"msctls_trackbar32",WS_VISIBLE|WS_TABSTOP|TBS_NOTICKS|TBS_BOTH,81,0,296,14
+  CONTROL "",IDC_PANEL_CHK_AUDIO,"Button",WS_VISIBLE|WS_TABSTOP|BS_AUTOCHECKBOX,498,0,14,10
+  CONTROL "",IDC_PANEL_SLD_AUDIO,"msctls_trackbar32",WS_VISIBLE|WS_TABSTOP|TBS_NOTICKS|TBS_BOTH,441,0,54,12
+  CONTROL "04:36 / 28:47",IDC_PANEL_STC_TIMEFRAME,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP,381,0,54,8
 END
 
-3 TEXTINCLUDE 
+IDD_DLG_LIST DIALOGEX 0,0,145,382
+FONT 8,"MS Shell Dlg",400,0,1
+STYLE WS_CHILDWINDOW|WS_VISIBLE|WS_SYSMENU|DS_SHELLFONT
 BEGIN
-    "\0"
+  CONTROL "",IDC_LIST_TREE_VIDEO,"SysTreeView32",WS_VISIBLE|WS_BORDER|WS_HSCROLL|WS_TABSTOP,7,7,124,338
+  CONTROL "同步视频目录",IDC_LIST_BTN_SYNC,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP,7,359,66,14
+  CONTROL "",IDC_LIST_PGS_SYNC,"msctls_progress32",WS_VISIBLE|WS_BORDER,7,347,122,8
 END
 
-#endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
-
-IDR_MAINFRAME MENU 
+IDD_DLG_OPTION DIALOGEX 0,0,319,108
+CAPTION "Options"
+FONT 8,"MS Shell Dlg",400,0,1
+STYLE WS_POPUP|WS_VISIBLE|WS_CAPTION|WS_SYSMENU|DS_MODALFRAME|DS_SHELLFONT
 BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
-        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
-        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
-        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
-        MENUITEM SEPARATOR
-        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
-        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
-        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_APP_EXIT
-    END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
-        MENUITEM SEPARATOR
-        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
-        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "&About MBoo...",              ID_APP_ABOUT
-    END
+  CONTROL "OK",IDOK,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|BS_DEFPUSHBUTTON,205,87,50,14
+  CONTROL "Cancel",IDCANCEL,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP,262,87,50,14
+  CONTROL "视频目录查询接口 : ",IDC_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP,7,15,75,13
+  CONTROL "",IDC_OPTION_EDIT_URL,"Edit",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|ES_AUTOHSCROLL,83,14,229,14,WS_EX_CLIENTEDGE
+  CONTROL "本地视频存放目录 : ",IDC_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP,7,37,75,13
+  CONTROL "",IDC_OPTION_EDIT_DIR,"Edit",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|ES_AUTOHSCROLL,83,36,229,14,WS_EX_CLIENTEDGE
 END
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\MBoo.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_ABOUTBOX DIALOG  0, 0, 187, 102
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ABOUTBOX DIALOGEX 0,0,187,102
 CAPTION "About"
-FONT 8, "MS Sans Serif"
+FONT 8,"MS Sans Serif",0,0,0
+STYLE WS_POPUP|WS_VISIBLE|WS_CAPTION|WS_SYSMENU|DS_MODALFRAME
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,130,81,50,14
-    CTEXT           "MBoo Application v1.0\n\n(c) Copyright 2012",IDC_STATIC,25,57,78,
-                    32
-    ICON            IDR_MAINFRAME,IDC_STATIC,55,26,18,20
-    GROUPBOX        "",IDC_STATIC,7,7,115,88
+  CONTROL "OK",IDOK,"Button",WS_CHILDWINDOW|WS_VISIBLE|WS_TABSTOP|BS_DEFPUSHBUTTON,130,81,50,14
+  CONTROL "MBoo Application v1.0\n\n(c) Copyright 2012",IDC_STATIC,"Static",WS_CHILDWINDOW|WS_VISIBLE|WS_GROUP|SS_CENTER,25,57,78,32
+  CONTROL "",IDR_MAINFRAME,"Static",WS_CHILDWINDOW|WS_VISIBLE|SS_CENTERIMAGE|0x00000017,0,55,26,18
+  CONTROL "",IDC_STATIC,"Button",WS_CHILDWINDOW|WS_VISIBLE|BS_GROUPBOX,7,7,115,88
 END
 
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+IDR_MAINFRAME ACCELERATORS
 BEGIN
-    IDD_ABOUTBOX, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 180
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 95
-    END
+  78,ID_FILE_NEW,VIRTKEY,CONTROL,NOINVERT
+  79,ID_FILE_OPEN,VIRTKEY,CONTROL,NOINVERT
+  83,ID_FILE_SAVE,VIRTKEY,CONTROL,NOINVERT
+  80,ID_FILE_PRINT,VIRTKEY,CONTROL,NOINVERT
+  90,ID_EDIT_UNDO,VIRTKEY,CONTROL,NOINVERT
+  88,ID_EDIT_CUT,VIRTKEY,CONTROL,NOINVERT
+  67,ID_EDIT_COPY,VIRTKEY,CONTROL,NOINVERT
+  86,ID_EDIT_PASTE,VIRTKEY,CONTROL,NOINVERT
+  8,ID_EDIT_UNDO,VIRTKEY,ALT,NOINVERT
+  46,ID_EDIT_CUT,VIRTKEY,SHIFT,NOINVERT
+  45,ID_EDIT_COPY,VIRTKEY,CONTROL,NOINVERT
+  45,ID_EDIT_PASTE,VIRTKEY,SHIFT,NOINVERT
+  117,ID_NEXT_PANE,VIRTKEY,NOINVERT
+  117,ID_PREV_PANE,VIRTKEY,SHIFT,NOINVERT
 END
-#endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Accelerator
-//
-
-IDR_MAINFRAME ACCELERATORS 
-BEGIN
-    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
-    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
-    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
-    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL
-    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
-    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
-    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
-    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
-    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
-    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
-    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
-    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
-    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
-    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x2L
- FILESUBTYPE 0x0L
+FILEVERSION 1,0,0,1
+PRODUCTVERSION 1,0,0,1
+FILEOS 0x00000004
+FILETYPE 0x00000002
 BEGIN
-    BLOCK "StringFileInfo"
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904B0"
     BEGIN
-        BLOCK "040904B0"
-        BEGIN
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "MBoo Module\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "MBoo\0"
-            VALUE "LegalCopyright", "Copyright 2012\0"
-            VALUE "OriginalFilename", "MBoo.exe\0"
-            VALUE "ProductName", "MBoo Module\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
-        END
+      VALUE "FileDescription", "MBoo Module\0"
+      VALUE "FileVersion", "1, 0, 0, 1\0"
+      VALUE "InternalName", "MBoo\0"
+      VALUE "LegalCopyright", "Copyright 2012\0"
+      VALUE "OriginalFilename", "MBoo.exe\0"
+      VALUE "ProductName", "MBoo Module\0"
+      VALUE "ProductVersion", "1, 0, 0, 1\0"
     END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x0409, 0x04B0
-    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0409, 0x04B0
+  END
 END
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// String Table
-//
-
-STRINGTABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
-    IDR_MAINFRAME	"MBoo"
+  IDR_MAINFRAME "麦宝播放器 - 做最好的学习软件！"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
-    ID_FILE_NEW             "Create a new document\nNew"
-    ID_FILE_OPEN            "Open an existing document\nOpen"
-    ID_FILE_CLOSE           "Close the active document\nClose"
-    ID_FILE_SAVE            "Save the active document\nSave"
-    ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
-    ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
-    ID_FILE_PRINT_SETUP     "Change the printer and printing options\nPrint Setup"
-    ID_FILE_PRINT           "Print the active document\nPrint"
-    ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
+  ID_FILE_NEW "Create a new document\nNew"
+  ID_FILE_OPEN "Open an existing document\nOpen"
+  ID_FILE_CLOSE "Close the active document\nClose"
+  ID_FILE_SAVE "Save the active document\nSave"
+  ID_FILE_SAVE_AS "Save the active document with a new name\nSave As"
+  ID_FILE_PAGE_SETUP "Change the printing options\nPage Setup"
+  ID_FILE_PRINT_SETUP "Change the printer and printing options\nPrint Setup"
+  ID_FILE_PRINT "Print the active document\nPrint"
+  ID_FILE_PRINT_PREVIEW "Display full pages\nPrint Preview"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
-    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
-    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+  ID_APP_ABOUT "Display program information, version number and copyright\nAbout"
+  ID_APP_EXIT "Quit the application; prompts to save documents\nExit"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
-    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
-    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+  ID_NEXT_PANE "Switch to the next window pane\nNext Pane"
+  ID_PREV_PANE "Switch back to the previous window pane\nPrevious Pane"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
-    ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
-    ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
-    ID_WINDOW_CASCADE       "Arrange windows so they overlap\nCascade Windows"
-    ID_WINDOW_TILE_HORZ     "Arrange windows as non-overlapping tiles\nTile Windows"
-    ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping tiles\nTile Windows"
-    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+  ID_WINDOW_NEW "Open another window for the active document\nNew Window"
+  ID_WINDOW_ARRANGE "Arrange icons at the bottom of the window\nArrange Icons"
+  ID_WINDOW_CASCADE "Arrange windows so they overlap\nCascade Windows"
+  ID_WINDOW_TILE_HORZ "Arrange windows as non-overlapping tiles\nTile Windows"
+  ID_WINDOW_TILE_VERT "Arrange windows as non-overlapping tiles\nTile Windows"
+  ID_WINDOW_SPLIT "Split the active window into panes\nSplit"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
-    ID_EDIT_CLEAR           "Erase the selection\nErase"
-    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
-    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
-    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
-    ID_EDIT_FIND            "Find the specified text\nFind"
-    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
-    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
-    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
-    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
-    ID_EDIT_UNDO            "Undo the last action\nUndo"
-    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+  ID_EDIT_CLEAR "Erase the selection\nErase"
+  ID_EDIT_CLEAR_ALL "Erase everything\nErase All"
+  ID_EDIT_COPY "Copy the selection and put it on the Clipboard\nCopy"
+  ID_EDIT_CUT "Cut the selection and put it on the Clipboard\nCut"
+  ID_EDIT_FIND "Find the specified text\nFind"
+  ID_EDIT_PASTE "Insert Clipboard contents\nPaste"
+  ID_EDIT_REPEAT "Repeat the last action\nRepeat"
+  ID_EDIT_REPLACE "Replace specific text with different text\nReplace"
+  ID_EDIT_SELECT_ALL "Select the entire document\nSelect All"
+  ID_EDIT_UNDO "Undo the last action\nUndo"
+  ID_EDIT_REDO "Redo the previously undone action\nRedo"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
-    ATL_IDS_SCSIZE          "Change the window size"
-    ATL_IDS_SCMOVE          "Change the window position"
-    ATL_IDS_SCMINIMIZE      "Reduce the window to an icon"
-    ATL_IDS_SCMAXIMIZE      "Enlarge the window to full size"
-    ATL_IDS_SCNEXTWINDOW    "Switch to the next document window"
-    ATL_IDS_SCPREVWINDOW    "Switch to the previous document window"
-    ATL_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+  ATL_IDS_SCSIZE "Change the window size"
+  ATL_IDS_SCMOVE "Change the window position"
+  ATL_IDS_SCMINIMIZE "Reduce the window to an icon"
+  ATL_IDS_SCMAXIMIZE "Enlarge the window to full size"
+  ATL_IDS_SCNEXTWINDOW "Switch to the next document window"
+  ATL_IDS_SCPREVWINDOW "Switch to the previous document window"
+  ATL_IDS_SCCLOSE "Close the active window and prompts to save the documents"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
-    ATL_IDS_SCRESTORE       "Restore the window to normal size"
-    ATL_IDS_SCTASKLIST      "Activate Task List"
-    ATL_IDS_MDICHILD        "Activate this window"
+  ATL_IDS_SCRESTORE "Restore the window to normal size"
+  ATL_IDS_SCTASKLIST "Activate Task List"
+  ATL_IDS_MDICHILD "Activate this window"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE
 BEGIN
-    ATL_IDS_IDLEMESSAGE     "Ready"
-    ATL_IDS_MRU_FILE        "Open this document"
+  ATL_IDS_IDLEMESSAGE "Ready"
+  ATL_IDS_MRU_FILE "Open this document"
 END
 
-#endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-#ifndef APSTUDIO_INVOKED
-#endif    // not APSTUDIO_INVOKED

@@ -192,11 +192,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DlgOption.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\MainFrm.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\MBoo.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MBoo.h"
 				>
 			</File>
 			<File
@@ -223,6 +231,42 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\VideoList.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\VideoPanel.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\VideoWnd.cpp"
+				>
+			</File>
+			<Filter
+				Name="sqlite"
+				>
+				<File
+					RelativePath="..\deps\sqlite\sqlite3.c"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							UsePrecompiledHeader="0"
+						/>
+					</FileConfiguration>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -230,6 +274,14 @@
 			>
 			<File
 				RelativePath=".\AboutDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\define.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DlgOption.h"
 				>
 			</File>
 			<File
@@ -246,6 +298,18 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\VideoList.h"
+				>
+			</File>
+			<File
+				RelativePath=".\VideoPanel.h"
+				>
+			</File>
+			<File
+				RelativePath=".\VideoWnd.h"
 				>
 			</File>
 		</Filter>

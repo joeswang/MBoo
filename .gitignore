@@ -1,2 +1,5 @@
 MBoo.ncb
 MBoo.suo
+deps/
+MBoo/Debug/
+MBoo/Release/

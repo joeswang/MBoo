@@ -3,15 +3,25 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include "VideoWnd.h"
+#include "VideoList.h"
+#include "VideoPanel.h"
 
 class CMBooView : public CWindowImpl<CMBooView>
 {
 public:
 	DECLARE_WND_CLASS(NULL)
 
+	CVideoWnd	m_videoWnd;
+	CVideoList	m_videoList;
+	CVideoPanel	m_videoPanel;
+
 	BOOL PreTranslateMessage(MSG* pMsg);
+	BOOL PlayFlashVideo(LPCTSTR lpszURL);
 
 	BEGIN_MSG_MAP(CMBooView)
+		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
 	END_MSG_MAP()
 
@@ -20,5 +30,7 @@ public:
 //	LRESULT CommandHandler(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 //	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 
+	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 };
