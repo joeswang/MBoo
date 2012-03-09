@@ -63,7 +63,7 @@ TCHAR videopath[MAX_PATH] = {0};
 
 	hWndUI = (HWND)data;
 	if(NULL == hWndUI) return;
-
+/*
 	lstrcat(videopath, g_MainDirectory);
 	lstrcat(videopath, _T("\\"));
 	lstrcat(videopath, _T("videos"));
@@ -93,7 +93,7 @@ TCHAR videopath[MAX_PATH] = {0};
 		goto exitthread;
 	}
 
-
+*/
 /*
 CURL *curl;
 CURLcode res;
@@ -147,7 +147,7 @@ LRESULT CVideoList::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	GetClientRect(&rc);
 	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
-	treeVideo.MoveWindow(0, 0, rc.right - rc.left - 3, rc.bottom -rc.top -36); 
+	treeVideo.MoveWindow(0, 0, rc.right - rc.left - 3, rc.bottom -rc.top - DIALOG_PANEL_HEIGHT); 
 
 	return TRUE;
 }
@@ -264,10 +264,12 @@ void CVideoList::PopulateVideoInfo()
 			ti2 = ti1.AddTail(szText1, 0);
 		}
 		sqlite3_finalize(stmt1);
+		treeVideo.Expand(ti1);
 	}
 
 	sqlite3_finalize(stmt);
 	sqlite3_close(db);
+
 /*
 	ti1 = treeVideo.InsertItem(_T("Oracle培训视频"), TVI_ROOT, TVI_LAST);
 	ti2 = ti1.AddTail(_T("[小布老师]Oracle 12C Fundamental培训视频"), 0);

@@ -88,7 +88,7 @@ LRESULT CMBooView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 {
 	UINT cw, ch;   // client area width and height
 	UINT vw, vh;   // video width and height
-	UINT margin, x, y, width, height;
+	UINT marginV, marginH, x, y, width, height;
 
 	RECT rc;
 	GetClientRect(&rc);
@@ -98,19 +98,23 @@ LRESULT CMBooView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 	vw = m_videoWnd.GetVideoWidth();
 	vh = m_videoWnd.GetVideoHeight();
 
-	if((cw - 2 < vw + DIALOG_LIST_MIN_WIDTH) || (ch - 2 < vh + DIALOG_PANEL_MIN_HEIGHT))
+	if((cw  < vw + DIALOG_LIST_MIN_WIDTH) || (ch < vh + DIALOG_PANEL_HEIGHT))
 	{
 		return 0;
 	}
 
 	// move the Dialog Panel
-	height = ch - 2 - vh;
-	if(height > DIALOG_PANEL_MAX_HEIGHT) height = DIALOG_PANEL_MAX_HEIGHT; 
+	height = DIALOG_PANEL_HEIGHT;
+	//if(height > DIALOG_PANEL_MAX_HEIGHT) height = DIALOG_PANEL_MAX_HEIGHT; 
 
-	margin =  (ch - 2 - height - vh ) / 2;
-
-	x = rc.right - 1 - margin - vw;
-	y = rc.top + 1 + margin;
+	marginV =  (ch - height - vh ) / 2;
+	marginH = marginV;
+	if( cw - vw - marginH * 2 < DIALOG_LIST_MIN_WIDTH) 
+	{
+		marginH = (cw -vw - DIALOG_LIST_MIN_WIDTH) / 2;
+	}
+	x = rc.right - marginH - vw;
+	y = rc.top + marginV;
 	m_videoWnd.WindowMove(x, y, vw, vh);
 	//m_advWnd.WindowMove(x, y, vw, vh);
 	m_videoRect.left = x;
@@ -118,13 +122,13 @@ LRESULT CMBooView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 	m_videoRect.right = x + vw;
 	m_videoRect.bottom = y + vh;
 
-	width = cw - 2 - 2 * margin - vw;
+	width = cw - 2 * marginH - vw;
 	m_videoList.WindowMove(0, 0, width, rc.bottom - rc.top);
 
 	x = rc.left + width;
 	y = rc.bottom - height;
-	width = cw - width;
-	m_videoPanel.WindowMove(x, y, width, height);
+//	width = cw - width;
+	m_videoPanel.WindowMove(x, y, cw - width, height);
 
 	return 0;
 }
