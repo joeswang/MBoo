@@ -16,8 +16,10 @@
 
 #define DEFAULT_QUERY_URL	_T("http://www.boobooke.com/qv.php")
 #define DEFAULT_VIDEO_DIR   _T("videos")
+#define DEFAULT_VIDEO_DB	_T("video.db")
 
 extern HFPC g_hFPC;
+extern TCHAR g_MainDirectory[MAX_PATH];
 
 #define TITLE_MAX_LEN			256
 

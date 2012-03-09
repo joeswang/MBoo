@@ -3,6 +3,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+//#include "AdvWnd.h"
 #include "VideoWnd.h"
 #include "VideoList.h"
 #include "VideoPanel.h"
@@ -12,6 +13,8 @@ class CMBooView : public CWindowImpl<CMBooView>
 public:
 	DECLARE_WND_CLASS(NULL)
 
+	//CAdvWnd		m_advWnd;
+	RECT		m_videoRect;
 	CVideoWnd	m_videoWnd;
 	CVideoList	m_videoList;
 	CVideoPanel	m_videoPanel;

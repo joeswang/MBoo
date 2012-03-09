@@ -1,5 +1,7 @@
 MBoo.ncb
 MBoo.suo
 deps/
+MBoo/res
 MBoo/Debug/
 MBoo/Release/
+video.db

@@ -10,28 +10,41 @@
 #include "VideoWnd.h"
 
 #define PANEL_TIMER_ID	1
-int i = 0;
+
 LRESULT CVideoPanel::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-	CTrackBarCtrl trackVolume;
+	CButton btnStart, btnStop, btnAudio;
+	CTrackBarCtrl trackVolume, trackProgress;
 	CStatic stcTimeFrame;
-	::SkinSE_SubclassWindow(m_hWnd, _T("dlg.videopanel"));
-	::SkinSE_SetLayoutMainFrame(m_hWnd);
-
-	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_BTN_STARTPAUSE), _T("panel.btn.play"));
-	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_BTN_STOP), _T("panel.btn.stop"));
-	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_SLD_PROGRESS), _T("panel.sld.progress1"));
-	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_SLD_AUDIO), _T("panel.sld.audio"));
-	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_CHK_AUDIO), _T("panel.chk.audio"));
-	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_STC_TIMEFRAME), _T("panel.stc.timeframe"));
-
-	stcTimeFrame = GetDlgItem(IDC_PANEL_STC_TIMEFRAME);
+	
+	btnStart		= GetDlgItem(IDC_PANEL_BTN_STARTPAUSE);
+	btnStop			= GetDlgItem(IDC_PANEL_BTN_STOP);
+	btnAudio		= GetDlgItem(IDC_PANEL_CHK_AUDIO);
+	trackProgress	= GetDlgItem(IDC_PANEL_SLD_PROGRESS);
+	trackVolume		= GetDlgItem(IDC_PANEL_SLD_AUDIO);
+	stcTimeFrame	= GetDlgItem(IDC_PANEL_STC_TIMEFRAME);
 	::SetWindowLong(stcTimeFrame, GWL_STYLE, stcTimeFrame.GetStyle() | SS_NOTIFY);
-
-	trackVolume = GetDlgItem(IDC_PANEL_SLD_AUDIO);
+	stcTimeFrame.SetWindowText(_T("00:00 / 00:00"));
 	trackVolume.SetRangeMin(0);
 	trackVolume.SetRangeMax(100);
 	trackVolume.SetPos(100);
+	btnAudio.SetCheck(1);
+	
+	btnStart.EnableWindow(0);
+	btnStop.EnableWindow(0);
+	btnAudio.EnableWindow(0);
+	trackProgress.EnableWindow(0);
+	trackVolume.EnableWindow(0);
+	stcTimeFrame.EnableWindow(0);
+
+	::SkinSE_SubclassWindow(m_hWnd, _T("dlg.videopanel"));
+	::SkinSE_SetLayoutMainFrame(m_hWnd);
+	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_BTN_STARTPAUSE), _T("panel.btn.play"));
+	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_BTN_STOP), _T("panel.btn.stop"));
+	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_SLD_PROGRESS), _T("panel.sld.progress"));
+	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_SLD_AUDIO), _T("panel.sld.audio"));
+	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_CHK_AUDIO), _T("panel.chk.audio"));
+	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_STC_TIMEFRAME), _T("panel.stc.timeframe"));
 
 	SetTimer(PANEL_TIMER_ID, 1000);
 
@@ -85,40 +98,10 @@ BOOL CVideoPanel::WindowMove(UINT x, UINT y, UINT cx, UINT cy)
 
 LRESULT CVideoPanel::OnCheckAudio(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	//MessageBox(_T("Ohooo"));
-	/*
-	SFPCGetTotalFrames info1;
-	SFPCGetFrameNum info2;
-	SFPCCurrentFrame info3;
-
-	if(NULL == m_hWndFlash) return FALSE;
-
-	::SendMessage(m_hWndFlash, FPCM_GET_TOTALFRAMES, 0, (LPARAM)&info1);
-	if(FAILED(info1.hr))
-	{
-		// error
-		return FALSE;
-	}
-
-	::SendMessage(m_hWndFlash, FPCM_GET_FRAMENUM, 0, (LPARAM)&info2);
-	if(FAILED(info2.hr))
-	{
-		// error
-		return FALSE;
-	}
-
-	::SendMessage(m_hWndFlash, FPCM_CURRENTFRAME, 0, (LPARAM)&info3);
-	if(FAILED(info3.hr))
-	{
-		// error
-		return FALSE;
-	}
-	return TRUE;
-	*/
-	CButton btnAudio;
 
 	if(NULL == m_pFlashObject) return FALSE;
-	btnAudio = GetDlgItem(IDC_PANEL_CHK_AUDIO);
+
+	CButton btnAudio = GetDlgItem(IDC_PANEL_CHK_AUDIO);
 	
 	return m_pFlashObject->EnableSound(btnAudio.GetCheck());
 
@@ -161,13 +144,28 @@ LRESULT CVideoPanel::OnStartPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 LRESULT CVideoPanel::OnStop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-
-	//CButton btnStartPause;
-	//btnStartPause = GetDlgItem(IDC_PANEL_BTN_STOP);
+	TCHAR msg[256] = {0};
+	int current, total;
 
 	if(NULL == m_pFlashObject) return FALSE;
 	
-	return m_pFlashObject->Stop();
+	m_pFlashObject->Stop();
+	CTrackBarCtrl trackProgress = GetDlgItem(IDC_PANEL_SLD_PROGRESS);
+	trackProgress.SetPos(0);
+	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_BTN_STARTPAUSE), _T("panel.btn.play"));
+
+	total = m_pFlashObject->GetTotalFrames();
+	if(0 > total) return 0;
+
+	current = m_pFlashObject->GetCurrentFrame();
+	if(0 > current) return 0;
+
+	CStatic stcTimeFrame = GetDlgItem(IDC_PANEL_STC_TIMEFRAME);
+	_stprintf_s(msg, 256, _T("%d / %d"), current, total);
+	stcTimeFrame.SetWindowText(msg);
+
+	return 0;
+
 }
 
 LRESULT CVideoPanel::OnTimeFrameMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
@@ -209,49 +207,38 @@ LRESULT CVideoPanel::OnHScroll(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*
 void CVideoPanel::UpdateVideoUI(VIDEOINFO* videoInfo)
 {
 
-	CButton btnStartPause;
-	CButton btnStop;
-	CButton btnAudio;
-	CTrackBarCtrl trackProgress;
+	if(NULL == m_pFlashObject) return;
+	if(!m_pFlashObject->HavingMovie()) return;
 
-	btnStartPause = GetDlgItem(IDC_PANEL_BTN_STARTPAUSE);
-	btnStop = GetDlgItem(IDC_PANEL_BTN_STOP);
-	btnAudio = GetDlgItem(IDC_PANEL_CHK_AUDIO);
-	trackProgress = GetDlgItem(IDC_PANEL_SLD_PROGRESS);
+	CButton btnStart		= GetDlgItem(IDC_PANEL_BTN_STARTPAUSE);
+	CButton btnStop			= GetDlgItem(IDC_PANEL_BTN_STOP);
+	CButton btnAudio		= GetDlgItem(IDC_PANEL_CHK_AUDIO);
+	CTrackBarCtrl trackProgress	= GetDlgItem(IDC_PANEL_SLD_PROGRESS);
+	CTrackBarCtrl trackVolume		= GetDlgItem(IDC_PANEL_SLD_AUDIO);
+	CStatic stcTimeFrame	= GetDlgItem(IDC_PANEL_STC_TIMEFRAME);
 
-	if(NULL == m_pFlashObject)
+	btnStart.EnableWindow();
+	btnStop.EnableWindow();
+	btnAudio.EnableWindow();
+	trackProgress.EnableWindow();
+	trackVolume.EnableWindow();
+	stcTimeFrame.EnableWindow();
+	
+	trackProgress.SetRangeMin(0);
+	trackProgress.SetRangeMax(videoInfo->totalframes);
+
+	trackVolume.SetRangeMin(0);
+	trackVolume.SetRangeMax(100);
+	trackVolume.SetPos(100);
+	btnAudio.SetCheck(1);
+
+	if(1 == m_pFlashObject->IsPlaying())
 	{
-		btnStartPause.EnableWindow(FALSE);
-		btnStop.EnableWindow(FALSE);
-		btnAudio.EnableWindow(FALSE);
+		::SkinSE_SubclassWindow(btnStart, _T("panel.btn.pause"));
 	}
 	else
 	{
-		if(m_pFlashObject->HavingMovie())
-		{
-			trackProgress.SetRangeMin(0);
-			trackProgress.SetRangeMax(videoInfo->totalframes);
-			btnStartPause.EnableWindow(TRUE);
-			btnStop.EnableWindow(TRUE);
-			btnAudio.EnableWindow(TRUE);
-			CheckDlgButton(IDC_PANEL_CHK_AUDIO, TRUE);
-			if(1 == m_pFlashObject->IsPlaying())
-			{
-				::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_BTN_STARTPAUSE), _T("panel.btn.pause"));
-			}
-			else
-			{
-				::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_BTN_STARTPAUSE), _T("panel.btn.play"));
-			}
-			//btnAudio.CheckDlgButton();
-		}
-		else
-		{
-			btnStartPause.EnableWindow(FALSE);
-			btnStop.EnableWindow(FALSE);
-			btnAudio.EnableWindow(FALSE);
-		}
+		::SkinSE_SubclassWindow(btnStart, _T("panel.btn.play"));
 	}
-
 }
 

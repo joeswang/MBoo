@@ -31,6 +31,12 @@ HWND CVideoWnd::Create(HWND hwndParent)
 	return m_hWnd;
 }
 
+BOOL CVideoWnd::ShowWindow(int nCmdShow)
+{
+	if(NULL == m_hWnd) return FALSE;
+	return (::ShowWindow(m_hWnd, nCmdShow));
+}
+
 BOOL CVideoWnd::WindowMove(UINT x, UINT y, UINT cx, UINT cy)
 {
 	if(m_hWnd != NULL)

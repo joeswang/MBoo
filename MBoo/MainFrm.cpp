@@ -71,7 +71,7 @@ LRESULT CMainFrame::OnFileOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 {
 	// TODO: add code to initialize document
 	TCHAR lpszURL[_MAX_PATH + 256] = { 0 };
-	CFileDialog cFilePath( TRUE,NULL,NULL,OFN_SHAREAWARE,_T("BBK Video Files (*.swf)\0*.swf\0All Files (*.*)\0*.*||"));
+	CFileDialog cFilePath( TRUE,NULL,NULL,OFN_SHAREAWARE,_T("BBK Video Files (*.swf)\0*.swf\0"));
 
 	cFilePath.m_ofn.lpstrFile = lpszURL;
 	cFilePath.m_ofn.nMaxFile = _MAX_PATH + 256;

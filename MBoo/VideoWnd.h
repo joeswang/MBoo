@@ -25,6 +25,7 @@ public:
 
 	HWND Create(HWND hwndParent);
 	BOOL WindowMove(UINT, UINT, UINT, UINT);
+	BOOL ShowWindow(int);
 	BOOL PlayFlashVideo(LPCTSTR lpszURL);
 	BOOL HavingMovie() { return m_havingMoive; }
 	UINT IsPlaying();  // 0 - Not Playing, 1 - Playing, 2 - Error

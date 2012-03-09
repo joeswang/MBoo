@@ -27,17 +27,35 @@ LRESULT CMBooView::OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	dc.TextOut(100,100, msg);
 */
 	CBrush brush;
-	brush.CreateSolidBrush(RGB(0,0,255));
+	brush.CreateSolidBrush(RGB(130,135,144));
 	dc.FillRect(&rc, brush);
+/*
+	rc.left = rc.top = 0;
+	rc.right = m_videoWnd.GetVideoWidth();
+	rc.bottom = m_videoWnd.GetVideoHeight();
 
+	CMemoryDC dcMem(dc, rc);
+	//dcMem.CreateCompatibleDC(dc);
+	CBitmap bmpBK;
+	bmpBK.LoadBitmap(IDR_BACKGROUND);
+	HBITMAP hbmpOld = dcMem.SelectBitmap(bmpBK);
+	dc.BitBlt(m_videoRect.left, m_videoRect.top, 
+			m_videoRect.right - m_videoRect.left, 
+			m_videoRect.bottom - m_videoRect.top,
+			dcMem, 0, 0, SRCCOPY);
+	dcMem.SelectBitmap(hbmpOld);
+*/
 	return 0;
 }
 
 LRESULT CMBooView::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	
+	//m_advWnd.Create(m_hWnd);
+	//m_advWnd.ShowWindow(SW_SHOW);
+	m_videoRect.bottom = m_videoRect.left = m_videoRect.right = m_videoRect.top = 0;
 	m_videoWnd.Create(m_hWnd);
-	//m_videoWnd.ShowWindow(SW_SHOW);
+	m_videoWnd.ShowWindow(SW_HIDE);
 
 	m_videoList.Create(m_hWnd);
 	m_videoList.ShowWindow(SW_SHOW);
@@ -57,6 +75,9 @@ BOOL CMBooView::PlayFlashVideo(LPCTSTR lpszURL)
 {
 	BOOL ret;
 	
+	//m_advWnd.ShowWindow(SW_HIDE);
+	m_videoWnd.ShowWindow(SW_SHOW);
+
 	ret = m_videoWnd.PlayFlashVideo(lpszURL);
 	//m_videoPanel.UpdateUI();
 
@@ -91,6 +112,11 @@ LRESULT CMBooView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 	x = rc.right - 1 - margin - vw;
 	y = rc.top + 1 + margin;
 	m_videoWnd.WindowMove(x, y, vw, vh);
+	//m_advWnd.WindowMove(x, y, vw, vh);
+	m_videoRect.left = x;
+	m_videoRect.top = y;
+	m_videoRect.right = x + vw;
+	m_videoRect.bottom = y + vh;
 
 	width = cw - 2 - 2 * margin - vw;
 	m_videoList.WindowMove(0, 0, width, rc.bottom - rc.top);

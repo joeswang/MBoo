@@ -12,6 +12,8 @@
 #define IDD_DLG_LIST                    130
 #define IDD_DLG_OPTION                  131
 
+#define IDR_BACKGROUND					200
+
 #define IDC_PANEL_BTN_STARTPAUSE        1000
 #define IDC_PANEL_BTN_STOP              1001
 #define IDC_PANEL_SLD_PROGRESS          1002

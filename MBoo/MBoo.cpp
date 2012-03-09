@@ -12,6 +12,7 @@
 
 // the global variables
 HFPC g_hFPC = NULL;
+TCHAR g_MainDirectory[MAX_PATH] = {0};
 VIDEOINFO	g_videoInfo;
 
 CAppModule _Module;
@@ -45,6 +46,11 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	if (NULL == g_hFPC)
 	{
 		::MessageBox(NULL, _T("你的系统尚未安装Flash播放器插件！"), _T("未检测到Flash插件"),MB_OK);
+		return 0;
+	}
+	if(0 == ::GetCurrentDirectory(MAX_PATH, g_MainDirectory))
+	{
+		::MessageBox(NULL, _T("无法获得可执行文件的目录！"), _T("系统错误"),MB_OK);
 		return 0;
 	}
 
