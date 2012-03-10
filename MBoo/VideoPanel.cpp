@@ -53,9 +53,8 @@ LRESULT CVideoPanel::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 LRESULT CVideoPanel::OnLBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	//::SendMessage(GetParent(), uMsg, wParam, lParam);
-	//if(NULL != m_pwndParent)
-	//	m_pwndParent->OnLBtnDown(uMsg, wParam, lParam, bHandled);
+	::PostMessage(GetParent(), uMsg, wParam, lParam);
+	bHandled = FALSE;
 	return 0;
 }
 

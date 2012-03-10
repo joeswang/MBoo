@@ -228,18 +228,26 @@ LRESULT CVideoList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
 	::SetWindowLong(treeVideo, GWL_STYLE, 
 		treeVideo.GetStyle() | TVS_HASLINES | TVS_HASBUTTONS | TVS_SHOWSELALWAYS | TVS_LINESATROOT | TVS_DISABLEDRAGDROP);
-
-	//CBitmap bmpLock;
-	//CImageList imgList;
-	//bmpLock.LoadBitmap(IDR_BITMAP_LOCK);
-	//imgList.Create(9, 12, ILC_COLOR24|ILC_MASK, 0, 1);
-	//imgList.Add(bmpLock,RGB(255,0,255));
+/*
+	CBitmap bmpLock;
+	CImageList imgList;
+	bmpLock.LoadBitmap(IDR_BITMAP_LOCK);
+	imgList.Create(9, 12, ILC_COLOR24|ILC_MASK, 0, 1);
+	imgList.Add(bmpLock,RGB(255,0,255));
 	//bmpLock.DeleteObject();
-	//treeVideo.SetImageList(imgList);
+	treeVideo.SetImageList(imgList);
+*/
 	//_beginthread(populate_videoinfo_thread, 0, m_hWnd);
 	PopulateVideoInfo();
 
 	return TRUE;
+}
+
+LRESULT CVideoList::OnLBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	::PostMessage(GetParent(), uMsg, wParam, lParam);
+	bHandled = FALSE;
+	return 0;
 }
 
 LRESULT CVideoList::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)

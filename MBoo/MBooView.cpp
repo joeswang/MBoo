@@ -137,3 +137,10 @@ LRESULT CMBooView::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 
 	return 0;
 }
+
+LRESULT CMBooView::OnLBtnDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled)
+{
+	::PostMessage(GetParent(), WM_NCLBUTTONDOWN, HTCAPTION, lParam);
+	bHandled = FALSE;
+	return 0;
+}
