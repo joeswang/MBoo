@@ -14,6 +14,7 @@
 HFPC g_hFPC = NULL;
 TCHAR g_MainDirectory[MAX_PATH] = {0};
 VIDEOINFO	g_videoInfo;
+VIDEONODE g_videoTree[VIDEO_MAX_NUMBERS];
 
 CAppModule _Module;
 
@@ -53,6 +54,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		::MessageBox(NULL, _T("无法获得可执行文件的目录！"), _T("系统错误"),MB_OK);
 		return 0;
 	}
+	
+	memset(g_videoTree, 0, sizeof(VIDEONODE) * VIDEO_MAX_NUMBERS);
 
 	::SkinSE_LoadSkinResourceFromFolder(_T("skin"));
 

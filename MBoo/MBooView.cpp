@@ -21,30 +21,35 @@ LRESULT CMBooView::OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	//TODO: Add your drawing code here
 	RECT rc;
 	GetClientRect(&rc);
+
+	CBrush brush;
+	brush.CreateSolidBrush(RGB(130,135,144));
+	dc.FillRect(&rc, brush);
 /*
 	TCHAR msg[256] = {0};
 	_stprintf_s(msg, 256, _T("%d:%d / %d:%d"), rc.left, rc.right, rc.top, rc.bottom);
 	dc.TextOut(100,100, msg);
 */
-	CBrush brush;
-	brush.CreateSolidBrush(RGB(130,135,144));
-	dc.FillRect(&rc, brush);
 /*
 	rc.left = rc.top = 0;
 	rc.right = m_videoWnd.GetVideoWidth();
 	rc.bottom = m_videoWnd.GetVideoHeight();
-
-	CMemoryDC dcMem(dc, rc);
-	//dcMem.CreateCompatibleDC(dc);
-	CBitmap bmpBK;
-	bmpBK.LoadBitmap(IDR_BACKGROUND);
-	HBITMAP hbmpOld = dcMem.SelectBitmap(bmpBK);
-	dc.BitBlt(m_videoRect.left, m_videoRect.top, 
-			m_videoRect.right - m_videoRect.left, 
-			m_videoRect.bottom - m_videoRect.top,
-			dcMem, 0, 0, SRCCOPY);
-	dcMem.SelectBitmap(hbmpOld);
 */
+	SIZE sz;
+	CBitmap bmpBK;
+	bmpBK.LoadBitmap(IDR_BITMAP_BKGROUND);
+	bmpBK.GetSize(sz);
+	if(m_videoRect.right - m_videoRect.left < sz.cx || m_videoRect.bottom - m_videoRect.top < sz.cy) return 0;
+
+	int x = m_videoRect.left + (m_videoRect.right - m_videoRect.left - sz.cx) / 2;
+	int y = m_videoRect.top + (m_videoRect.bottom - m_videoRect.top - sz.cy) / 2;
+
+	CDC dcMem;
+	dcMem.CreateCompatibleDC(dc);
+	HBITMAP hbmpOld = dcMem.SelectBitmap(bmpBK);
+	dc.BitBlt(x, y, sz.cx, sz.cy, dcMem, 0, 0, SRCCOPY);
+	dcMem.SelectBitmap(hbmpOld);
+	//dcMem.DeleteDC();
 	return 0;
 }
 

@@ -13,10 +13,31 @@
 
 #define DIALOG_LIST_MIN_WIDTH	200
 
-#define DEFAULT_QUERY_URL	_T("http://www.boobooke.com/qv.php")
-#define DEFAULT_VIDEO_DIR   _T("videos")
-#define DEFAULT_VIDEO_DB	_T("video.db")
+#define PARAM_QUERY_URL		0
+#define PARAM_VIDEO_DIR		1
+#define DEFAULT_QUERY_URL	"http://www.boobooke.com/qv.php"
+#define DEFAULT_VIDEO_DIR   "videos"
+#define DEFAULT_VIDEO_DB	"video.db"
 
+#define SQL_STMT_MAX_LEN	1024
+
+//////////////////////////////////////////////////
+#define VIDEO_FILENAME_MAX_LEN	14	// bbk1234567890
+#define VIDEO_TITLE_MAX_LEN		256
+#define	TUTOR_NAME_MAX_LEN		128
+#define VIDEO_MAX_NUMBERS		1000
+
+typedef struct _VIDEONODE
+{
+	int		child;		// -1 : NULL
+	int		sibling;	// -1 : NULL
+	TCHAR	title[VIDEO_TITLE_MAX_LEN];
+	UINT	total;
+	TCHAR   file[VIDEO_FILENAME_MAX_LEN];
+	TCHAR	tutor[TUTOR_NAME_MAX_LEN];
+} VIDEONODE;
+
+extern VIDEONODE g_videoTree[VIDEO_MAX_NUMBERS];
 extern HFPC g_hFPC;
 extern TCHAR g_MainDirectory[MAX_PATH];
 

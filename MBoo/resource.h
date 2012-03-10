@@ -12,7 +12,8 @@
 #define IDD_DLG_LIST                    130
 #define IDD_DLG_OPTION                  131
 
-#define IDR_BACKGROUND					200
+#define IDR_BITMAP_LOCK					200
+#define IDR_BITMAP_BKGROUND				201
 
 #define IDC_PANEL_BTN_STARTPAUSE        1000
 #define IDC_PANEL_BTN_STOP              1001
@@ -27,6 +28,8 @@
 
 #define IDC_OPTION_EDIT_URL             1511
 #define IDC_OPTION_EDIT_DIR             1512
+#define IDC_OPTION_RBN_NEW				1513
+#define IDC_OPTION_RBN_ALL				1514
 
 #define ID_FILE_OPTION					3000
 #define ID_EDIT_CAPTURE					3010

@@ -53,13 +53,106 @@ TCHAR videopath[MAX_PATH] = {0};
 	return 0;
 }
 
+void populate_videoinfo_thread(void* data)
+{
+/*
+HWND hWndUI;
+sqlite3 *db;
+sqlite3_stmt *stmt = NULL;
+sqlite3_stmt *stmt1 = NULL;
+char *pcol = NULL;
+int rc,  idx,  prevSeries, prevVideo;
+TCHAR msg[256] = {0};
+char sql[SQL_STMT_MAX_LEN] = {0};
+TCHAR path[2 * MAX_PATH] = {0};
+
+	hWndUI = (HWND)data;
+	if(NULL == hWndUI) return;
+
+	memset(g_videoTree, 0, sizeof(VIDEONODE) * VIDEO_MAX_NUMBERS);
+	idx = 0;
+	prevSeries = prevVideo = -1;  // the first node
+
+	lstrcat(path, g_MainDirectory);
+	lstrcat(path, _T("\\"));
+	lstrcat(path, _T(DEFAULT_VIDEO_DB));
+
+	rc = sqlite3_open(CT2A(path), &db);
+	if( rc )
+	{
+		//_stprintf_s(msg, 256, _T("无法打开数据库文件: %s\n"), _T(DEFAULT_VIDEO_DB));
+		sqlite3_close(db);
+		//MessageBox(msg);
+		return;
+	}
+	sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT sid, tid, total, title, summary FROM series ORDER BY 1");
+	if(SQLITE_OK != sqlite3_prepare_v2(db, sql, -1, &stmt,NULL))
+	{
+		sqlite3_finalize(stmt);
+		sqlite3_close(db);
+		return;
+	}
+	
+	cols = sqlite3_column_count(stmt);
+	while(TRUE)
+	{
+		if(VIDEO_MAX_NUMBERS <= idx) break;
+		g_videoTree[idx].child = g_videoTree[idx].sibling = -1; // NULL
+
+		rc = sqlite3_step(stmt);
+		if(SQLITE_ROW != rc)
+		{
+			break;
+		}
+		pcol = (char*)sqlite3_column_text(stmt,0); // sid
+		sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT vid, idx, title, summary FROM video WHERE sid=\'%s\' ORDER BY idx", pcol);
+		CA2T szSID(pcol, CP_ACP);
+		pcol = (char*)sqlite3_column_text(stmt,3); // title
+		CA2T szTITLE(pcol, CP_ACP);
+		g_videoTree[idx].total = sqlite3_column_int(stmt, 2); // total
+		_stprintf_s(g_videoTree[idx].title, VIDEO_TITLE_MAX_LEN, _T("[系列%s/共%d集]: %s\n"), szSID, g_videoTree[idx].total, szTITLE);
+
+		if(prevSeries >= 0)
+		{
+			g_videoTree[prevSeries].sibling = idx;
+		}
+		prevSeries = idx; idx++;
+		if(SQLITE_OK != sqlite3_prepare_v2(db, sql, -1, &stmt1,NULL))
+		{
+			sqlite3_finalize(stmt1);
+			continue;
+			//sqlite3_finalize(stmt);
+			//sqlite3_close(db);
+			//MessageBox(_T("执行SQL查询出错！"));
+			//return;
+		}
+		while(TRUE)
+		{
+			rc = sqlite3_step(stmt1);
+			if(SQLITE_ROW != rc)
+			{
+				break;
+			}
+			pcol = (char*)sqlite3_column_text(stmt1,2);
+			CA2T szText1(pcol, CP_ACP);
+			ti2 = ti1.AddTail(szText1, 0);
+		}
+		sqlite3_finalize(stmt1);
+		treeVideo.Expand(ti1);
+	}
+
+	sqlite3_finalize(stmt);
+	sqlite3_close(db);
+*/
+}
+
 void get_videoinfo_thread(void* data)
 {
 HWND hWndUI;
 int i;
-WIN32_FIND_DATA findata;
-HANDLE hFind;
-TCHAR videopath[MAX_PATH] = {0};
+//WIN32_FIND_DATA findata;
+//HANDLE hFind;
+TCHAR videopath[2 * MAX_PATH] = {0};
 
 	hWndUI = (HWND)data;
 	if(NULL == hWndUI) return;
@@ -115,7 +208,7 @@ CURLcode res;
 		Sleep(1000);
 	}
 
-exitthread :
+//exitthread :
 	PostMessage(hWndUI, WM_PROGRESS_SYNC_HIDE, 0, 0);
 }
 
@@ -136,6 +229,14 @@ LRESULT CVideoList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	::SetWindowLong(treeVideo, GWL_STYLE, 
 		treeVideo.GetStyle() | TVS_HASLINES | TVS_HASBUTTONS | TVS_SHOWSELALWAYS | TVS_LINESATROOT | TVS_DISABLEDRAGDROP);
 
+	//CBitmap bmpLock;
+	//CImageList imgList;
+	//bmpLock.LoadBitmap(IDR_BITMAP_LOCK);
+	//imgList.Create(9, 12, ILC_COLOR24|ILC_MASK, 0, 1);
+	//imgList.Add(bmpLock,RGB(255,0,255));
+	//bmpLock.DeleteObject();
+	//treeVideo.SetImageList(imgList);
+	//_beginthread(populate_videoinfo_thread, 0, m_hWnd);
 	PopulateVideoInfo();
 
 	return TRUE;
@@ -198,7 +299,6 @@ LRESULT CVideoList::OnBtnSyncVideo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	return 0;
 }
 
-#define SQL_MAX_LEN	1024
 void CVideoList::PopulateVideoInfo()
 {
 	sqlite3 *db;
@@ -207,22 +307,22 @@ void CVideoList::PopulateVideoInfo()
     char *pcol = NULL;
 	int rc,  cols;
 	TCHAR msg[256] = {0};
-	char sql[SQL_MAX_LEN] = {0};
+	char sql[SQL_STMT_MAX_LEN] = {0};
 
 	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
 	CTreeItem ti1, ti2;
 
 	//WideCharToMultiByte(CP_ACP, WC_DISCARDNS, DEFAULT_VIDEO_DB, -1, buffer, SQL_MAX_LEN, NULL, NULL);
 
-	rc = sqlite3_open(CT2A(DEFAULT_VIDEO_DB), &db);
+	rc = sqlite3_open(DEFAULT_VIDEO_DB, &db);
 	if( rc )
 	{
-		_stprintf_s(msg, 256, _T("无法打开数据库文件: %s\n"), DEFAULT_VIDEO_DB);
+		_stprintf_s(msg, 256, _T("无法打开数据库文件: %s\n"), _T(DEFAULT_VIDEO_DB));
 		sqlite3_close(db);
 		MessageBox(msg);
 		return;
 	}
-	sprintf_s(sql, SQL_MAX_LEN, "SELECT sid, tid, total, title, summary FROM series ORDER BY 1");
+	sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT sid, tid, total, title, summary FROM series ORDER BY 1");
 	if(SQLITE_OK != sqlite3_prepare_v2(db, sql, -1, &stmt,NULL))
 	{
 		sqlite3_finalize(stmt);
@@ -240,7 +340,7 @@ void CVideoList::PopulateVideoInfo()
 			break;
 		}
 		pcol = (char*)sqlite3_column_text(stmt,0);
-		sprintf_s(sql, SQL_MAX_LEN, "SELECT vid, idx, title, summary FROM video WHERE sid=\'%s\' ORDER BY idx", pcol);
+		sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT vid, idx, title, summary FROM video WHERE sid=\'%s\' ORDER BY idx", pcol);
 		pcol = (char*)sqlite3_column_text(stmt,3);
 		CA2T szText(pcol, CP_ACP);
 		ti1 = treeVideo.InsertItem(szText, TVI_ROOT, TVI_LAST);
