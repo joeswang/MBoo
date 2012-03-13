@@ -97,3 +97,8 @@ LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	dlg.DoModal();
 	return 0;
 }
+
+BOOL CMainFrame::PlayFlashVideo(LPCTSTR lpszURL)
+{
+	return m_view.PlayFlashVideo(lpszURL);
+}

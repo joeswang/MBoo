@@ -4,9 +4,6 @@
 
 #pragma once
 
-#define WM_PROGRESS_SYNC_SHOW	(WM_USER + 100)
-#define WM_PROGRESS_SYNC_HIDE	(WM_USER + 101)
-
 class CVideoWnd;
 
 class CVideoList : public CDialogImpl<CVideoList>
@@ -30,19 +27,21 @@ public:
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLBtnDown)
 		NOTIFY_ID_HANDLER(IDC_LIST_TREE_VIDEO, OnVideoSelected)
+		MESSAGE_HANDLER(WM_UPDATE_VIDEO_TREE, OnUpdateVideoTree)
 		MESSAGE_HANDLER(WM_PROGRESS_SYNC_SHOW, OnProgressShow)
-		MESSAGE_HANDLER(WM_PROGRESS_SYNC_HIDE, OnProgressHide)
+		MESSAGE_HANDLER(WM_PROGRESS_SYNC_UPDATE, OnProgressUpdate)
 		COMMAND_ID_HANDLER(IDC_LIST_BTN_SYNC, OnBtnSyncVideo)
     END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnLBtnDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnUpdateVideoTree(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnProgressShow(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT OnProgressHide(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnProgressUpdate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnBtnSyncVideo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnVideoSelected(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
 private:
-	void PopulateVideoInfo();
+	//void PopulateVideoInfo();
 };

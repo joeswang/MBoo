@@ -30,11 +30,6 @@ LRESULT CMBooView::OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	_stprintf_s(msg, 256, _T("%d:%d / %d:%d"), rc.left, rc.right, rc.top, rc.bottom);
 	dc.TextOut(100,100, msg);
 */
-/*
-	rc.left = rc.top = 0;
-	rc.right = m_videoWnd.GetVideoWidth();
-	rc.bottom = m_videoWnd.GetVideoHeight();
-*/
 	SIZE sz;
 	CBitmap bmpBK;
 	bmpBK.LoadBitmap(IDR_BITMAP_BKGROUND);
@@ -81,7 +76,7 @@ BOOL CMBooView::PlayFlashVideo(LPCTSTR lpszURL)
 	BOOL ret;
 	
 	//m_advWnd.ShowWindow(SW_HIDE);
-	m_videoWnd.ShowWindow(SW_SHOW);
+	//m_videoWnd.ShowWindow(SW_SHOW);
 
 	ret = m_videoWnd.PlayFlashVideo(lpszURL);
 	//m_videoPanel.UpdateUI();

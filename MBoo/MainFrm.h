@@ -11,7 +11,7 @@ public:
 	DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME)
 
 	CMBooView m_view;
-
+	BOOL PlayFlashVideo(LPCTSTR lpszURL);
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
 

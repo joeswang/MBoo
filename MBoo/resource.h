@@ -30,6 +30,7 @@
 #define IDC_OPTION_EDIT_DIR             1512
 #define IDC_OPTION_RBN_NEW				1513
 #define IDC_OPTION_RBN_ALL				1514
+#define IDC_OPTION_BTN_BROWSE			1515
 
 #define ID_FILE_OPTION					3000
 #define ID_EDIT_CAPTURE					3010

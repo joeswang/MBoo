@@ -1,6 +1,8 @@
 MBoo.ncb
 MBoo.suo
 deps/
+MBoo/videos/
 MBoo/Debug/
 MBoo/Release/
 video.db
+*.swp

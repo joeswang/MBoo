@@ -18,28 +18,59 @@
 #define DEFAULT_QUERY_URL	"http://www.boobooke.com/qv.php"
 #define DEFAULT_VIDEO_DIR   "videos"
 #define DEFAULT_VIDEO_DB	"video.db"
+#define DEFAULT_VIDEO_FILE	"video.swf"
 
 #define SQL_STMT_MAX_LEN	1024
 
+#define WM_UPDATE_VIDEO_TREE	(WM_USER + 100)
+#define WM_PROGRESS_SYNC_SHOW	(WM_USER + 101)
+#define WM_PROGRESS_SYNC_UPDATE	(WM_USER + 102)
+
 //////////////////////////////////////////////////
-#define VIDEO_FILENAME_MAX_LEN	14	// bbk1234567890
+#define VIDEO_FILENAME_MAX_LEN	13	// bbk1234567890
 #define VIDEO_TITLE_MAX_LEN		256
 #define	TUTOR_NAME_MAX_LEN		128
-#define VIDEO_MAX_NUMBERS		1000
+#define VIDEO_HASHTBL_SIZE		1009
+#define SERIES_MAX_NUMBERS		1000
 
-typedef struct _VIDEONODE
+typedef struct _RECVIDEO RECVIDEO;
+struct _RECVIDEO
 {
-	int		child;		// -1 : NULL
-	int		sibling;	// -1 : NULL
-	TCHAR	title[VIDEO_TITLE_MAX_LEN];
-	UINT	total;
-	TCHAR   file[VIDEO_FILENAME_MAX_LEN];
-	TCHAR	tutor[TUTOR_NAME_MAX_LEN];
-} VIDEONODE;
+	RECVIDEO* next;		// hash next
+	RECVIDEO* nextVideo;
+	BYTE	db;			// if this video is in the database ,then db=1;
+	BYTE	size;		// 800 X 600,  or 1024 X 768?
+	TCHAR	name[VIDEO_FILENAME_MAX_LEN + 1];
+	TCHAR	title[VIDEO_TITLE_MAX_LEN + 1];
+};
 
-extern VIDEONODE g_videoTree[VIDEO_MAX_NUMBERS];
+typedef struct _RECSERIES RECSERIES;
+struct _RECSERIES
+{
+	RECVIDEO* firstVideo;
+	int		valid;
+	int		sid;
+	int		total;
+	TCHAR	title[VIDEO_TITLE_MAX_LEN + 1];
+};
+
+extern RECVIDEO* g_ptblV[VIDEO_HASHTBL_SIZE];
+extern RECSERIES g_tblS[SERIES_MAX_NUMBERS];
+
+#define URL_MAX_LEN			256
+
+typedef struct _CONFIGINFO
+{
+	TCHAR	maindir[MAX_PATH];
+	TCHAR	videodir[MAX_PATH];
+	TCHAR	url[URL_MAX_LEN];
+	int		update_mode;
+} CONFIGINFO;
+
+extern CONFIGINFO g_configInfo;
+
 extern HFPC g_hFPC;
-extern TCHAR g_MainDirectory[MAX_PATH];
+//extern TCHAR g_MainDirectory[MAX_PATH];
 
 #define TITLE_MAX_LEN			256
 

@@ -23,6 +23,10 @@ extern CAppModule _Module;
 #include <atlctrls.h>
 #include <atldlgs.h>
 
+#include <Strsafe.h>
+#include <io.h>
+#include <fcntl.h>
+
 // for libcurl 
 #include "../deps/libcurl/include/curl/curl.h"
 #pragma comment(lib, "../deps/libcurl/lib/libcurl.lib")

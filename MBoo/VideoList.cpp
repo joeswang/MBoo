@@ -6,211 +6,9 @@
 #include "resource.h"
 #include "define.h"
 
-#include "VideoList.h"
 #include "VideoWnd.h"
-
-#define VIDEO_BUFFER_MAX_LEN	102400
-static TCHAR request_buf[VIDEO_BUFFER_MAX_LEN];
-static TCHAR response_buf[VIDEO_BUFFER_MAX_LEN];
-
-int find_video(TCHAR* result, UINT maxlen, TCHAR* path)
-{
-/*
-UINT i = 0;
-WIN32_FIND_DATA findata;
-HANDLE hFind;
-TCHAR videopath[MAX_PATH] = {0};
-
-	//memset
-	lstrcat(videopath, path);
-	lstrcat(videopath, _T("\\bbk*"));
-
-	hFind = FindFirstFile(videopath, &findata);
-	if(INVALID_HANDLE_VALUE == hFind)
-	{
-		result[0] = 0x00;
-		return 0;
-	}
-	if(findata.dwFileAttributes != FILE_ATTRIBUTE_DIRECTORY)
-	{
-
-	}
-	lstrcat(videopath, _T("\\"));
-	lstrcat(videopath, _T("bbk*"));
-	::MessageBox(hWndUI, videopath, _T("系统错误"), MB_OK);
-	hFind = FindFirstFile(videopath, &findata);
-	if(INVALID_HANDLE_VALUE == hFind)
-	{
-		::MessageBox(hWndUI, _T("在指定目录下找不到视频"), _T("系统错误"), MB_OK);
-		goto exitthread;
-	}
-	if(findata.dwFileAttributes != FILE_ATTRIBUTE_DIRECTORY)
-	{
-		::MessageBox(hWndUI, _T("在指定目录下找不到视频"), _T("系统错误"), MB_OK);
-		goto exitthread;
-	}
-*/	
-	return 0;
-}
-
-void populate_videoinfo_thread(void* data)
-{
-/*
-HWND hWndUI;
-sqlite3 *db;
-sqlite3_stmt *stmt = NULL;
-sqlite3_stmt *stmt1 = NULL;
-char *pcol = NULL;
-int rc,  idx,  prevSeries, prevVideo;
-TCHAR msg[256] = {0};
-char sql[SQL_STMT_MAX_LEN] = {0};
-TCHAR path[2 * MAX_PATH] = {0};
-
-	hWndUI = (HWND)data;
-	if(NULL == hWndUI) return;
-
-	memset(g_videoTree, 0, sizeof(VIDEONODE) * VIDEO_MAX_NUMBERS);
-	idx = 0;
-	prevSeries = prevVideo = -1;  // the first node
-
-	lstrcat(path, g_MainDirectory);
-	lstrcat(path, _T("\\"));
-	lstrcat(path, _T(DEFAULT_VIDEO_DB));
-
-	rc = sqlite3_open(CT2A(path), &db);
-	if( rc )
-	{
-		//_stprintf_s(msg, 256, _T("无法打开数据库文件: %s\n"), _T(DEFAULT_VIDEO_DB));
-		sqlite3_close(db);
-		//MessageBox(msg);
-		return;
-	}
-	sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT sid, tid, total, title, summary FROM series ORDER BY 1");
-	if(SQLITE_OK != sqlite3_prepare_v2(db, sql, -1, &stmt,NULL))
-	{
-		sqlite3_finalize(stmt);
-		sqlite3_close(db);
-		return;
-	}
-	
-	cols = sqlite3_column_count(stmt);
-	while(TRUE)
-	{
-		if(VIDEO_MAX_NUMBERS <= idx) break;
-		g_videoTree[idx].child = g_videoTree[idx].sibling = -1; // NULL
-
-		rc = sqlite3_step(stmt);
-		if(SQLITE_ROW != rc)
-		{
-			break;
-		}
-		pcol = (char*)sqlite3_column_text(stmt,0); // sid
-		sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT vid, idx, title, summary FROM video WHERE sid=\'%s\' ORDER BY idx", pcol);
-		CA2T szSID(pcol, CP_ACP);
-		pcol = (char*)sqlite3_column_text(stmt,3); // title
-		CA2T szTITLE(pcol, CP_ACP);
-		g_videoTree[idx].total = sqlite3_column_int(stmt, 2); // total
-		_stprintf_s(g_videoTree[idx].title, VIDEO_TITLE_MAX_LEN, _T("[系列%s/共%d集]: %s\n"), szSID, g_videoTree[idx].total, szTITLE);
-
-		if(prevSeries >= 0)
-		{
-			g_videoTree[prevSeries].sibling = idx;
-		}
-		prevSeries = idx; idx++;
-		if(SQLITE_OK != sqlite3_prepare_v2(db, sql, -1, &stmt1,NULL))
-		{
-			sqlite3_finalize(stmt1);
-			continue;
-			//sqlite3_finalize(stmt);
-			//sqlite3_close(db);
-			//MessageBox(_T("执行SQL查询出错！"));
-			//return;
-		}
-		while(TRUE)
-		{
-			rc = sqlite3_step(stmt1);
-			if(SQLITE_ROW != rc)
-			{
-				break;
-			}
-			pcol = (char*)sqlite3_column_text(stmt1,2);
-			CA2T szText1(pcol, CP_ACP);
-			ti2 = ti1.AddTail(szText1, 0);
-		}
-		sqlite3_finalize(stmt1);
-		treeVideo.Expand(ti1);
-	}
-
-	sqlite3_finalize(stmt);
-	sqlite3_close(db);
-*/
-}
-
-void get_videoinfo_thread(void* data)
-{
-HWND hWndUI;
-int i;
-//WIN32_FIND_DATA findata;
-//HANDLE hFind;
-TCHAR videopath[2 * MAX_PATH] = {0};
-
-	hWndUI = (HWND)data;
-	if(NULL == hWndUI) return;
-/*
-	lstrcat(videopath, g_MainDirectory);
-	lstrcat(videopath, _T("\\"));
-	lstrcat(videopath, _T("videos"));
-	hFind = FindFirstFile(videopath, &findata);
-	if(INVALID_HANDLE_VALUE == hFind)
-	{
-		::MessageBox(hWndUI, _T("找不到视频存放目录"), _T("系统错误"), MB_OK);
-		goto exitthread;
-	}
-	if(findata.dwFileAttributes != FILE_ATTRIBUTE_DIRECTORY)
-	{
-		::MessageBox(hWndUI, _T("找不到视频存放目录"), _T("系统错误"), MB_OK);
-		goto exitthread;
-	}
-	lstrcat(videopath, _T("\\"));
-	lstrcat(videopath, _T("bbk*"));
-	::MessageBox(hWndUI, videopath, _T("系统错误"), MB_OK);
-	hFind = FindFirstFile(videopath, &findata);
-	if(INVALID_HANDLE_VALUE == hFind)
-	{
-		::MessageBox(hWndUI, _T("在指定目录下找不到视频"), _T("系统错误"), MB_OK);
-		goto exitthread;
-	}
-	if(findata.dwFileAttributes != FILE_ATTRIBUTE_DIRECTORY)
-	{
-		::MessageBox(hWndUI, _T("在指定目录下找不到视频"), _T("系统错误"), MB_OK);
-		goto exitthread;
-	}
-
-*/
-/*
-CURL *curl;
-CURLcode res;
-	curl_global_init(CURL_GLOBAL_WIN32);
-	curl = curl_easy_init();
-
-	if(curl) 
-	{
-		curl_easy_setopt(curl, CURLOPT_URL, DEFAULT_QUERY_URL);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "bbklist=BBKBEGIN|IP地址|CPU标识|bbk1234|bbk4567|bbk7890|BBKEND");
-		res = curl_easy_perform(curl);
-		curl_easy_cleanup(curl);
-	}
-*/
-	for(i=1; i<=10; i++)
-	{
-		PostMessage(hWndUI, WM_PROGRESS_SYNC_SHOW, 100, i*10);
-		Sleep(1000);
-	}
-
-//exitthread :
-	PostMessage(hWndUI, WM_PROGRESS_SYNC_HIDE, 0, 0);
-}
+#include "VideoList.h"
+#include "VideoData.h"
 
 LRESULT CVideoList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
@@ -237,8 +35,9 @@ LRESULT CVideoList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	//bmpLock.DeleteObject();
 	treeVideo.SetImageList(imgList);
 */
-	//_beginthread(populate_videoinfo_thread, 0, m_hWnd);
-	PopulateVideoInfo();
+	_beginthread(thread_query_videoinfo, 0, m_hWnd);
+	//populate_videoinfo_thread(NULL);
+	//PopulateVideoInfo();
 
 	return TRUE;
 }
@@ -263,26 +62,73 @@ LRESULT CVideoList::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 LRESULT CVideoList::OnVideoSelected(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/)
 {
+TCHAR path[MAX_PATH] = { 0 };
+WIN32_FIND_DATA findata;
+HANDLE hVideoFile;
+TCHAR msg[MAX_PATH * 2] = {0};
+
 	if(NM_DBLCLK != pnmh->code) return FALSE;
-	MessageBox(_T("选中一个视频！"));
+	//MessageBox(_T("选中一个视频！"));
+	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
+	CTreeItem ti =	treeVideo.GetSelectedItem();
+	if(ti.HasChildren()) return TRUE;
+
+	if(NULL == m_pFlashObject ) return FALSE;
+
+	RECVIDEO* p  = (RECVIDEO*)ti.GetData();
+	if(NULL == p) return FALSE;
+	//MessageBox(p->name);
+	memset(path, 0, sizeof(path));
+	StringCchCat(path, MAX_PATH, g_configInfo.videodir);
+	StringCchCat(path, MAX_PATH, _T("\\"));
+	StringCchCat(path, MAX_PATH, p->name);
+	StringCchCat(path, MAX_PATH, _T("\\"));
+	StringCchCat(path, MAX_PATH, _T(DEFAULT_VIDEO_FILE));
+
+	hVideoFile = FindFirstFile(path, &findata);
+	if(INVALID_HANDLE_VALUE == hVideoFile)
+	{
+		StringCchCat(msg, MAX_PATH*2, _T("没有找到视频文件 : "));
+		StringCchCat(msg, MAX_PATH*2, path);
+		MessageBox(msg);
+		return FALSE;
+	}
+
+	m_pFlashObject->PlayFlashVideo(path);
+
 	return TRUE;
 }
 
 
-LRESULT CVideoList::OnProgressShow(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
+LRESULT CVideoList::OnProgressUpdate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 {
 	CProgressBarCtrl pgs = GetDlgItem(IDC_LIST_PGS_SYNC);
 	pgs.SetPos(lParam);
+	if(100 == lParam)
+	{
+		_beginthread(thread_query_videoinfo, 0, m_hWnd);
+	}
 	return 0;
 }
 
-LRESULT CVideoList::OnProgressHide(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
+LRESULT CVideoList::OnProgressShow(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 {
-	CButton btnSync = GetDlgItem(IDC_LIST_BTN_SYNC);
-	btnSync.EnableWindow(1);
-	//btnSync.ShowWindow(SW_SHOW);
+	BOOL bShow = (BOOL)lParam;
 	CProgressBarCtrl pgs = GetDlgItem(IDC_LIST_PGS_SYNC);
-	pgs.ShowWindow(SW_HIDE);
+	CButton btnSync = GetDlgItem(IDC_LIST_BTN_SYNC);
+	if(bShow)
+	{
+		pgs.SetRange(0, 100);
+		pgs.SetPos(0);
+		pgs.ShowWindow(SW_SHOW);	
+		btnSync.EnableWindow(FALSE);
+	}
+	else
+	{
+		pgs.ShowWindow(SW_HIDE);
+		btnSync.EnableWindow(TRUE);
+	}
+
 	return 0;
 }
 
@@ -297,115 +143,61 @@ LRESULT CVideoList::OnBtnSyncVideo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 {
 
 	CButton btnSync = GetDlgItem(IDC_LIST_BTN_SYNC);
-	//btnSync.ShowWindow(SW_HIDE);
-	btnSync.EnableWindow(0);
-	CProgressBarCtrl pgs = GetDlgItem(IDC_LIST_PGS_SYNC);
-	pgs.SetRange(0, 100);
-	pgs.ShowWindow(SW_SHOW);	
+	btnSync.EnableWindow(FALSE);
 
-	_beginthread(get_videoinfo_thread, 0, m_hWnd);
+	_beginthread(thread_update_videoinfo, 0, m_hWnd);
 	return 0;
 }
 
-void CVideoList::PopulateVideoInfo()
+LRESULT CVideoList::OnUpdateVideoTree(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-	sqlite3 *db;
-	sqlite3_stmt *stmt = NULL;
-	sqlite3_stmt *stmt1 = NULL;
-    char *pcol = NULL;
-	int rc,  cols;
-	TCHAR msg[256] = {0};
-	char sql[SQL_STMT_MAX_LEN] = {0};
-
+	int i;
+	RECVIDEO *p;
+	BOOL bFirst;
 	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
 	CTreeItem ti1, ti2;
 
-	//WideCharToMultiByte(CP_ACP, WC_DISCARDNS, DEFAULT_VIDEO_DB, -1, buffer, SQL_MAX_LEN, NULL, NULL);
+	treeVideo.DeleteAllItems();
 
-	rc = sqlite3_open(DEFAULT_VIDEO_DB, &db);
-	if( rc )
+	for(i=0; i<SERIES_MAX_NUMBERS; i++)
 	{
-		_stprintf_s(msg, 256, _T("无法打开数据库文件: %s\n"), _T(DEFAULT_VIDEO_DB));
-		sqlite3_close(db);
-		MessageBox(msg);
-		return;
-	}
-	sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT sid, tid, total, title, summary FROM series ORDER BY 1");
-	if(SQLITE_OK != sqlite3_prepare_v2(db, sql, -1, &stmt,NULL))
-	{
-		sqlite3_finalize(stmt);
-		sqlite3_close(db);
-		MessageBox(_T("执行SQL查询出错！"));
-		return;
-	}
-	
-	cols = sqlite3_column_count(stmt);
-	while(TRUE)
-	{
-		rc = sqlite3_step(stmt);
-		if(SQLITE_ROW != rc)
+		if(FALSE == g_tblS[i].valid) break;
+		p = g_tblS[i].firstVideo;
+		if(NULL == p) continue;  // there is no video in this series
+
+		ti1 = treeVideo.InsertItem(g_tblS[i].title, TVI_ROOT, TVI_LAST);
+		while(NULL != p)
 		{
-			break;
+			ti2 = ti1.AddTail(p->title, 0);
+			ti2.SetData((DWORD_PTR)p);
+			p = p->nextVideo;
 		}
-		pcol = (char*)sqlite3_column_text(stmt,0);
-		sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT vid, idx, title, summary FROM video WHERE sid=\'%s\' ORDER BY idx", pcol);
-		pcol = (char*)sqlite3_column_text(stmt,3);
-		CA2T szText(pcol, CP_ACP);
-		ti1 = treeVideo.InsertItem(szText, TVI_ROOT, TVI_LAST);
-		if(SQLITE_OK != sqlite3_prepare_v2(db, sql, -1, &stmt1,NULL))
+	}
+	bFirst = TRUE;
+	for(i=0; i<VIDEO_HASHTBL_SIZE; i++)
+	{
+		if(NULL == g_ptblV[i]) continue;
+		p = g_ptblV[i];
+		while(NULL != p)
 		{
-			sqlite3_finalize(stmt1);
-			sqlite3_finalize(stmt);
-			sqlite3_close(db);
-			MessageBox(_T("执行SQL查询出错！"));
-			return;
-		}
-		while(TRUE)
-		{
-			rc = sqlite3_step(stmt1);
-			if(SQLITE_ROW != rc)
+			if(FALSE == p->db)
 			{
-				break;
+				if(bFirst)
+				{
+					bFirst = FALSE;
+					ti1 = treeVideo.InsertItem(_T("需要同步目录信息的视频"), TVI_ROOT, TVI_LAST);
+					ti2 = ti1.AddTail(p->name, 0);
+				}
+				else
+				{
+					ti2 = ti1.AddTail(p->name, 0);
+				}
+				ti2.SetData((DWORD_PTR)p);
 			}
-			pcol = (char*)sqlite3_column_text(stmt1,2);
-			CA2T szText1(pcol, CP_ACP);
-			ti2 = ti1.AddTail(szText1, 0);
+			p = p->next;
 		}
-		sqlite3_finalize(stmt1);
-		treeVideo.Expand(ti1);
 	}
 
-	sqlite3_finalize(stmt);
-	sqlite3_close(db);
-
-/*
-	ti1 = treeVideo.InsertItem(_T("Oracle培训视频"), TVI_ROOT, TVI_LAST);
-	ti2 = ti1.AddTail(_T("[小布老师]Oracle 12C Fundamental培训视频"), 0);
-	ti2.AddTail(_T("[bbk1109]第一集 : Oracle 12C在Linux下的安装"), 0);
-	ti2.AddTail(_T("[bbk1312]第二集 : Oracle体系结构概述"), 0);
-	ti2.AddTail(_T("[bbk1322]第三集 : 使用DBCA和手工建库"), 0);
-	ti2.AddTail(_T("[bbk2341]第四集 : 表空间和数据文件"), 0);
-	ti2.AddTail(_T("[bbk3018]第五集 : 联机Redo文件和归档文件"), 0);
-	ti2 = ti1.AddTail(_T("[海明老师]菜鸟RMAN备份不犯愁培训视频"), 0);
-	ti2.AddTail(_T("[bbk1359]第一集 : Oracle备份概述"), 0);
-	ti2.AddTail(_T("[bbk1360]第二集 : RMAN的基本知识"), 0);
-	ti2.AddTail(_T("[bbk1361]第三集 : 如何做Oracle数据库的全备"), 0);
-	ti2.AddTail(_T("[bbk1362]第四集 : 如何做Oracle增量备份"), 0);
-	ti2.AddTail(_T("[bbk1363]第五集 : 菜鸟高枕无忧之使用脚本自动化备份"), 0);
-	ti1 = treeVideo.InsertItem(_T("Linux培训视频"), TVI_ROOT, TVI_LAST);
-	ti2 = ti1.AddTail(_T("[海明老师]Ubuntu Linux菜鸟不犯愁培训视频"), 0);
-	ti2.AddTail(_T("[bbk1239]第一集 : Linux概述和发展历史"), 0);
-	ti2.AddTail(_T("[bbk1240]第二集 : Ubuntu Linux的基本知识"), 0);
-	ti2.AddTail(_T("[bbk5401]第三集 : Ubuntu Linux的安装"), 0);
-	ti2.AddTail(_T("[bbk5402]第四集 : Linux基本命令入门"), 0);
-	ti2.AddTail(_T("[bbk5403]第五集 : 保卫你的桌面，保卫你的胃"), 0);
-	ti1 = treeVideo.InsertItem(_T("Java培训视频"), TVI_ROOT, TVI_LAST);
-	ti2 = ti1.AddTail(_T("[黑弓老师]Java从入门到精通培训视频"), 0);
-	ti2.AddTail(_T("[bbk5239]第一集 : Java概述和发展历史"), 0);
-	ti2.AddTail(_T("[bbk5240]第二集 : 搭建你的开发环境"), 0);
-	ti2.AddTail(_T("[bbk5501]第三集 : 一切皆是对象，OOP入门"), 0);
-	ti2.AddTail(_T("[bbk5502]第四集 : 工欲善其事必先利其器，Eclips宝典"), 0);
-	ti2.AddTail(_T("[bbk5503]第五集 : 保卫你的工作，保卫你的胃，使用Git保护你的代码"), 0);
-*/
+	return 0;
 
 }

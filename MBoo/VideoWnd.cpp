@@ -49,12 +49,15 @@ BOOL CVideoWnd::WindowMove(UINT x, UINT y, UINT cx, UINT cy)
 
 BOOL CVideoWnd::PlayFlashVideo(LPCTSTR lpszURL)
 {
+
 	SFPCPutMovie FPCPutMovie;
 	SFPCPutStandardMenu FPCPutStandardMenu;
 
 	if(NULL == m_hWnd) return FALSE;
 	if(NULL == lpszURL) return FALSE;
 	if(NULL == m_pdlgPanel) return FALSE;
+
+	::ShowWindow(m_hWnd, SW_SHOW);
 
 	FPCPutMovie.lpszBuffer = lpszURL;
 	::SendMessage(m_hWnd, FPCM_PUT_MOVIE, 0, (LPARAM)&FPCPutMovie);
