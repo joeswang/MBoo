@@ -25,7 +25,6 @@ extern CAppModule _Module;
 
 #include <Strsafe.h>
 #include <io.h>
-#include <fcntl.h>
 
 // for libcurl 
 #include "../deps/libcurl/include/curl/curl.h"

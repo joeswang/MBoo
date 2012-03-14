@@ -17,6 +17,7 @@ VIDEOINFO	g_videoInfo;
 CONFIGINFO	g_configInfo;
 RECVIDEO* g_ptblV[VIDEO_HASHTBL_SIZE] = { 0 };
 RECSERIES g_tblS[SERIES_MAX_NUMBERS] = { 0 };
+CMainFrame* g_pMainWnd = NULL;
 
 CAppModule _Module;
 
@@ -28,7 +29,7 @@ int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	CMessageLoop theLoop;
 	_Module.AddMessageLoop(&theLoop);
 
-	RECT rc = {0, 0, SCREEN_MIN_WIDTH,SCREEN_MIN_HEIGHT};
+	RECT rc = {0, 0, MBOO_MIN_WIDTH,MBOO_MIN_HEIGHT};
 	CMainFrame wndMain;
 	
 	if(wndMain.CreateEx(NULL, rc) == NULL)
@@ -36,7 +37,7 @@ int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		ATLTRACE(_T("Main window creation failed!\n"));
 		return 0;
 	}
-
+	g_pMainWnd = &wndMain;
 	wndMain.CenterWindow();
 	wndMain.ShowWindow(nCmdShow);
 
@@ -50,7 +51,15 @@ int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow)
 {
 CURLcode res;
-
+int sw, sh;
+	
+	sw = GetSystemMetrics(SM_CXSCREEN);
+	sh = GetSystemMetrics(SM_CYSCREEN);
+	if(sw < SCREEN_MIN_WIDTH || sh < SCREEN_MIN_HEIGHT)
+	{
+		::MessageBox(NULL, _T("你的电脑屏幕分辨率必须至少为1024X768或者以上，才能够运行本软件！"), _T("系统分辨率太低"),MB_OK);
+		return 0;
+	}
 	g_hFPC = FPC_LoadRegisteredOCX();
 	if (NULL == g_hFPC)
 	{
@@ -133,29 +142,37 @@ TCHAR path[MAX_PATH] = {0};
 		return FALSE;
 	}
 	//if(_tcslen(pcfgInfo->maindir) == 0) return FALSE;
+	/*
 	StringCchCat(pcfgInfo->url, URL_MAX_LEN, _T(DEFAULT_QUERY_URL));
 	StringCchCat(pcfgInfo->videodir, MAX_PATH, pcfgInfo->maindir);
 	StringCchCat(pcfgInfo->videodir, MAX_PATH, _T("\\"));
 	StringCchCat(pcfgInfo->videodir, MAX_PATH, _T(DEFAULT_VIDEO_DIR));
 	pcfgInfo->update_mode = 0;
-
+	*/
 	StringCchCat(path, MAX_PATH, pcfgInfo->maindir);
 	StringCchCat(path, MAX_PATH, _T("\\"));
 	StringCchCat(path, MAX_PATH, _T(DEFAULT_VIDEO_DB));
+	StringCchCat(pcfgInfo->dbfile, MAX_PATH, path);
 
 	hFile = FindFirstFile(path, &findata);
 	if(INVALID_HANDLE_VALUE == hFile) // if we cannot find the video.db database, then we will create a fresh one.
 	{
 		initilize_video_database(path);
-		return TRUE;
+		// return TRUE;
 	}
 
 	rc = sqlite3_open(CT2A(path), &db);
 	if( rc )
 	{
 		sqlite3_close(db);
+		StringCchCat(pcfgInfo->url, URL_MAX_LEN, _T(DEFAULT_QUERY_URL));
+		StringCchCat(pcfgInfo->videodir, MAX_PATH, pcfgInfo->maindir);
+		StringCchCat(pcfgInfo->videodir, MAX_PATH, _T("\\"));
+		StringCchCat(pcfgInfo->videodir, MAX_PATH, _T(DEFAULT_VIDEO_DIR));
+		pcfgInfo->update_mode = 0;
 		return TRUE;
 	}
+
 	sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT charval FROM config WHERE param = %d", PARAM_QUERY_URL);
 	if(SQLITE_OK == sqlite3_prepare_v2(db, sql, -1, &stmt,NULL))
 	{
@@ -169,7 +186,7 @@ TCHAR path[MAX_PATH] = {0};
 		}
 	}
 	sqlite3_finalize(stmt);
-/*
+
 	sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT charval FROM config WHERE param = %d", PARAM_VIDEO_DIR);
 	if(SQLITE_OK == sqlite3_prepare_v2(db, sql, -1, &stmt,NULL))
 	{
@@ -183,8 +200,21 @@ TCHAR path[MAX_PATH] = {0};
 		}
 	}
 	sqlite3_finalize(stmt);
-*/
 	sqlite3_close(db);
+
+	if(0 == _tcslen(pcfgInfo->url))
+	{
+		StringCchCat(pcfgInfo->url, URL_MAX_LEN, _T(DEFAULT_QUERY_URL));
+	}
+
+	if(0 == _tcslen(pcfgInfo->videodir))
+	{
+		StringCchCat(pcfgInfo->videodir, MAX_PATH, pcfgInfo->maindir);
+		StringCchCat(pcfgInfo->videodir, MAX_PATH, _T("\\"));
+		StringCchCat(pcfgInfo->videodir, MAX_PATH, _T(DEFAULT_VIDEO_DIR));
+	}
+
+	pcfgInfo->update_mode = 1;
 
 	return TRUE;
 }

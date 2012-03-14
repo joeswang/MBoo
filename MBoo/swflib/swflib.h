@@ -70,7 +70,7 @@ typedef struct _SWF
 	U32	fileAttributes;
 } SWF;
 
-int swf_ReadSWFInfo(int handle, SWF* swf);
+int swf_ReadSWFInfo(char*, SWF*);
 
 #ifdef __cplusplus
 	}

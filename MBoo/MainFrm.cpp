@@ -54,8 +54,8 @@ LRESULT CMainFrame::OnGetMinMaxInfo(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 {
 	LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
 
-    lpMMI->ptMinTrackSize.x = SCREEN_MIN_WIDTH; 
-    lpMMI->ptMinTrackSize.y = SCREEN_MIN_HEIGHT; 
+    lpMMI->ptMinTrackSize.x = MBOO_MIN_WIDTH; 
+    lpMMI->ptMinTrackSize.y = MBOO_MIN_HEIGHT; 
 
 	return 0;
 }

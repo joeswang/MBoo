@@ -60,7 +60,10 @@ BOOL CVideoWnd::PlayFlashVideo(LPCTSTR lpszURL)
 	::ShowWindow(m_hWnd, SW_SHOW);
 
 	FPCPutMovie.lpszBuffer = lpszURL;
+
 	::SendMessage(m_hWnd, FPCM_PUT_MOVIE, 0, (LPARAM)&FPCPutMovie);
+
+	::Sleep(500);
 
 	FPC_Play(m_hWnd);
 

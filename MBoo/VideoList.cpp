@@ -65,7 +65,7 @@ LRESULT CVideoList::OnVideoSelected(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/
 TCHAR path[MAX_PATH] = { 0 };
 WIN32_FIND_DATA findata;
 HANDLE hVideoFile;
-TCHAR msg[MAX_PATH * 2] = {0};
+TCHAR msg[MAX_PATH] = {0};
 
 	if(NM_DBLCLK != pnmh->code) return FALSE;
 	//MessageBox(_T("选中一个视频！"));
@@ -86,17 +86,31 @@ TCHAR msg[MAX_PATH * 2] = {0};
 	StringCchCat(path, MAX_PATH, _T(DEFAULT_VIDEO_FILE));
 
 	hVideoFile = FindFirstFile(path, &findata);
-	if(INVALID_HANDLE_VALUE == hVideoFile)
+	if(INVALID_HANDLE_VALUE != hVideoFile)
 	{
-		StringCchCat(msg, MAX_PATH*2, _T("没有找到视频文件 : "));
-		StringCchCat(msg, MAX_PATH*2, path);
-		MessageBox(msg);
-		return FALSE;
+		//if(NULL != g_pMainWnd) g_pMainWnd->SetWindowText(path);
+		m_pFlashObject->PlayFlashVideo(path);
+		return TRUE;
 	}
 
-	m_pFlashObject->PlayFlashVideo(path);
-
-	return TRUE;
+	memset(path, 0, sizeof(path));
+	StringCchCat(path, MAX_PATH, g_configInfo.videodir);
+	StringCchCat(path, MAX_PATH, _T("\\"));
+	StringCchCat(path, MAX_PATH, p->name);
+	StringCchCat(path, MAX_PATH, _T("\\"));
+	StringCchCat(path, MAX_PATH, p->name);
+	StringCchCat(path, MAX_PATH, _T(".swf"));
+	hVideoFile = FindFirstFile(path, &findata);
+	if(INVALID_HANDLE_VALUE != hVideoFile)
+	{
+		//if(NULL != g_pMainWnd) g_pMainWnd->SetWindowText(path);
+		m_pFlashObject->PlayFlashVideo(path);
+		return TRUE;
+	}
+	StringCchCat(msg, MAX_PATH, _T("没有找到视频文件 : "));
+	//StringCchCat(msg, MAX_PATH*2, path);
+	MessageBox(msg);
+	return FALSE;
 }
 
 
@@ -151,11 +165,12 @@ LRESULT CVideoList::OnBtnSyncVideo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 LRESULT CVideoList::OnUpdateVideoTree(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-	int i;
-	RECVIDEO *p;
-	BOOL bFirst;
-	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
-	CTreeItem ti1, ti2;
+int i;
+RECVIDEO *p;
+BOOL bFirst;
+CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
+CTreeItem ti1, ti2;
+TCHAR msg[VIDEO_TITLE_MAX_LEN * 2];
 
 	treeVideo.DeleteAllItems();
 
@@ -168,7 +183,9 @@ LRESULT CVideoList::OnUpdateVideoTree(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 		ti1 = treeVideo.InsertItem(g_tblS[i].title, TVI_ROOT, TVI_LAST);
 		while(NULL != p)
 		{
-			ti2 = ti1.AddTail(p->title, 0);
+			memset(msg, 0, VIDEO_TITLE_MAX_LEN*2);
+			_stprintf_s(msg, VIDEO_TITLE_MAX_LEN*2, _T("[第%d集] %s"), p->idx, p->title);
+			ti2 = ti1.AddTail(msg, 0);
 			ti2.SetData((DWORD_PTR)p);
 			p = p->nextVideo;
 		}

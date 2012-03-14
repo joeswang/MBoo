@@ -2,6 +2,7 @@
 #include <io.h>
 #include <stdio.h>
 #include <string.h>
+#include <fcntl.h>
 #include "swflib.h"
 
 static int reader_fileread(reader_t* r, void* data, int len)
@@ -122,14 +123,19 @@ int len;
 	return 0;
 }
 
-int swf_ReadSWFInfo(int handle, SWF* swf)
+int swf_ReadSWFInfo(char* filename, SWF* swf)
 {
 reader_t reader;
+int f, ret;
+	
+	if((f = _open(filename, _O_RDONLY | _O_BINARY)) < 0) return -1;
 
-	if(NULL == swf) return -1;
+	reader_init_filereader(&reader, f);
 
-	reader_init_filereader(&reader, handle);
+	ret = swf_ReadSWF2(&reader, swf);
 
-	return swf_ReadSWF2(&reader, swf);
+	_close(f);
+
+	return ret;
 }
 
