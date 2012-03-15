@@ -10,8 +10,11 @@
 
 LRESULT CDlgOption::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
+//CEdit editDIR;
+//	editDIR = GetDlgItem(IDC_OPTION_EDIT_DIR);
 	GetDlgItem(IDC_OPTION_EDIT_URL).SetWindowText(g_configInfo.url);
 	GetDlgItem(IDC_OPTION_EDIT_DIR).SetWindowText(g_configInfo.videodir);
+	CenterWindow();
 	return TRUE;
 }
 
@@ -21,14 +24,11 @@ sqlite3 *db;
 sqlite3_stmt *stmt = NULL;
 char *pcol = 0;
 int rc;
-char sql[SQL_STMT_MAX_LEN] = {0};
+TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 char buf[SQL_STMT_MAX_LEN] = {0};
 TCHAR msg[MAX_PATH] = {0};
 
-	StringCchCat(msg, MAX_PATH, g_configInfo.maindir);
-	StringCchCat(msg, MAX_PATH, _T("\\"));
-	StringCchCat(msg, MAX_PATH, _T(DEFAULT_VIDEO_DB));
-	rc = sqlite3_open(CT2A(msg), &db);
+	rc = sqlite3_open16(g_configInfo.dbfile, &db);
 	if( rc )
 	{
 		//_stprintf_s(msg, 256, _T("无法打开数据库文件: %s\n"), DEFAULT_VIDEO_DB);
@@ -39,24 +39,27 @@ TCHAR msg[MAX_PATH] = {0};
 	}
 
 	GetDlgItem(IDC_OPTION_EDIT_URL).GetWindowText(msg, MAX_PATH);
-	g_configInfo.url[0] = 0x00;
+	memset(g_configInfo.url, 0, sizeof(g_configInfo.url));
 	StringCchCat(g_configInfo.url, MAX_PATH, msg);
-	buf[0] = 0;
-	sprintf_s(buf, SQL_STMT_MAX_LEN, "%s", CT2A(msg));
-	sprintf_s(sql, SQL_STMT_MAX_LEN, "UPDATE config SET charval ='%s' WHERE param = %d", buf, PARAM_QUERY_URL);
-	if(SQLITE_OK == sqlite3_prepare_v2(db, sql, -1, &stmt,NULL))
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("UPDATE config SET charval ='%s' WHERE param = %d"), g_configInfo.url, PARAM_QUERY_URL);
+	if(SQLITE_OK == sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL))
 	{
 		rc = sqlite3_step(stmt);
 	}
 	sqlite3_finalize(stmt);
 
 	GetDlgItem(IDC_OPTION_EDIT_DIR).GetWindowText(msg, MAX_PATH);
-	g_configInfo.videodir[0] = 0x00;
+	memset(g_configInfo.videodir, 0, sizeof(g_configInfo.videodir));
 	StringCchCat(g_configInfo.videodir, MAX_PATH, msg);
-	buf[0] = 0;
-	sprintf_s(buf, SQL_STMT_MAX_LEN, "%s", CT2A(msg));
-	sprintf_s(sql, SQL_STMT_MAX_LEN, "UPDATE config SET charval ='%s' WHERE param = %d", buf, PARAM_VIDEO_DIR);
-	if(SQLITE_OK == sqlite3_prepare_v2(db, sql, -1, &stmt,NULL))
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("UPDATE config SET charval ='%s' WHERE param = %d"), g_configInfo.videodir, PARAM_VIDEO_DIR);
+	if(SQLITE_OK == sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL))
+	{
+		rc = sqlite3_step(stmt);
+	}
+	sqlite3_finalize(stmt);
+
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("UPDATE config SET intval =0 WHERE param = %d"), PARAM_UPDATE_MODE);
+	if(SQLITE_OK == sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL))
 	{
 		rc = sqlite3_step(stmt);
 	}
@@ -80,7 +83,7 @@ LRESULT CDlgOption::OnBtnBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	TCHAR szPath[MAX_PATH] = {0};  
     BROWSEINFO  bf;  
 
-	StringCchCat(szDefaultDir, MAX_PATH, g_configInfo.maindir);
+	StringCchCat(szDefaultDir, MAX_PATH, g_configInfo.basedir);
 
 	ZeroMemory(&bf,sizeof(BROWSEINFO));  
     bf.lParam=(LPARAM)szDefaultDir;  

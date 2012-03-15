@@ -139,3 +139,17 @@ LRESULT CMBooView::OnLBtnDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 	bHandled = FALSE;
 	return 0;
 }
+
+LRESULT CMBooView::OnChangeTile(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	::PostMessage(GetParent(), WM_CHANGE_WINDOW_TITLE, wParam, lParam);
+	return 0;
+}
+
+BOOL CMBooView::UpdateVideoTree()
+{
+	::PostMessage(m_videoList, WM_PROGRESS_SYNC_UPDATE, 100, 100);
+
+	return TRUE;
+}
+

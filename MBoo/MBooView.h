@@ -21,12 +21,13 @@ public:
 
 	BOOL PreTranslateMessage(MSG* pMsg);
 	BOOL PlayFlashVideo(LPCTSTR lpszURL);
-
+	BOOL UpdateVideoTree();
 	BEGIN_MSG_MAP(CMBooView)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLBtnDown)
+		MESSAGE_HANDLER(WM_CHANGE_WINDOW_TITLE, OnChangeTile)
 	END_MSG_MAP()
 
 // Handler prototypes (uncomment arguments if needed):
@@ -38,4 +39,6 @@ public:
 	LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnLBtnDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnChangeTile(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
 };

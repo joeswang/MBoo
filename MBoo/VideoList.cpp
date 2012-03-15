@@ -35,6 +35,7 @@ LRESULT CVideoList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	//bmpLock.DeleteObject();
 	treeVideo.SetImageList(imgList);
 */
+	m_btreeLocked = TRUE;
 	_beginthread(thread_query_videoinfo, 0, m_hWnd);
 	//populate_videoinfo_thread(NULL);
 	//PopulateVideoInfo();
@@ -67,6 +68,7 @@ WIN32_FIND_DATA findata;
 HANDLE hVideoFile;
 TCHAR msg[MAX_PATH] = {0};
 
+	if(m_btreeLocked) return FALSE;
 	if(NM_DBLCLK != pnmh->code) return FALSE;
 	//MessageBox(_T("选中一个视频！"));
 	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
@@ -88,7 +90,7 @@ TCHAR msg[MAX_PATH] = {0};
 	hVideoFile = FindFirstFile(path, &findata);
 	if(INVALID_HANDLE_VALUE != hVideoFile)
 	{
-		//if(NULL != g_pMainWnd) g_pMainWnd->SetWindowText(path);
+		::PostMessage(GetParent(), WM_CHANGE_WINDOW_TITLE, 0, (LPARAM)p);
 		m_pFlashObject->PlayFlashVideo(path);
 		return TRUE;
 	}
@@ -103,7 +105,7 @@ TCHAR msg[MAX_PATH] = {0};
 	hVideoFile = FindFirstFile(path, &findata);
 	if(INVALID_HANDLE_VALUE != hVideoFile)
 	{
-		//if(NULL != g_pMainWnd) g_pMainWnd->SetWindowText(path);
+		::PostMessage(GetParent(), WM_CHANGE_WINDOW_TITLE, 0, (LPARAM)p);
 		m_pFlashObject->PlayFlashVideo(path);
 		return TRUE;
 	}
@@ -159,6 +161,7 @@ LRESULT CVideoList::OnBtnSyncVideo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	CButton btnSync = GetDlgItem(IDC_LIST_BTN_SYNC);
 	btnSync.EnableWindow(FALSE);
 
+	m_btreeLocked = TRUE;
 	_beginthread(thread_update_videoinfo, 0, m_hWnd);
 	return 0;
 }
@@ -184,7 +187,7 @@ TCHAR msg[VIDEO_TITLE_MAX_LEN * 2];
 		while(NULL != p)
 		{
 			memset(msg, 0, VIDEO_TITLE_MAX_LEN*2);
-			_stprintf_s(msg, VIDEO_TITLE_MAX_LEN*2, _T("[第%d集] %s"), p->idx, p->title);
+			_stprintf_s(msg, VIDEO_TITLE_MAX_LEN*2, _T("[%s]:第%d集 - %s"), p->name, p->idx, p->title);
 			ti2 = ti1.AddTail(msg, 0);
 			ti2.SetData((DWORD_PTR)p);
 			p = p->nextVideo;
@@ -215,6 +218,7 @@ TCHAR msg[VIDEO_TITLE_MAX_LEN * 2];
 		}
 	}
 
+	m_btreeLocked = FALSE;
 	return 0;
 
 }

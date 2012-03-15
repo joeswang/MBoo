@@ -11,7 +11,7 @@ class CVideoList : public CDialogImpl<CVideoList>
 public:
     enum { IDD = IDD_DLG_LIST };
 
-	CVideoList() { m_pFlashObject = NULL; }
+	CVideoList() { m_pFlashObject = NULL; m_btreeLocked = TRUE;}
 	~CVideoList() {}
 
 private:
@@ -44,4 +44,5 @@ public:
 
 private:
 	//void PopulateVideoInfo();
+	BOOL	m_btreeLocked;
 };

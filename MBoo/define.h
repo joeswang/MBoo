@@ -18,16 +18,22 @@
 
 #define PARAM_QUERY_URL		0
 #define PARAM_VIDEO_DIR		1
+#define PARAM_UPDATE_MODE	2
+
+#define REQUEST_BUFFER_MAX_LEN	102400
+
 #define DEFAULT_QUERY_URL	"http://www.boobooke.com/qv.php"
 #define DEFAULT_VIDEO_DIR   "videos"
 #define DEFAULT_VIDEO_DB	"video.db"
 #define DEFAULT_VIDEO_FILE	"video.swf"
 
 #define SQL_STMT_MAX_LEN	1024
+#define UI_MESSAGE_MAX_LEN	1024
 
 #define WM_UPDATE_VIDEO_TREE	(WM_USER + 100)
 #define WM_PROGRESS_SYNC_SHOW	(WM_USER + 101)
 #define WM_PROGRESS_SYNC_UPDATE	(WM_USER + 102)
+#define WM_CHANGE_WINDOW_TITLE	(WM_USER + 103)
 
 #define	MBOO_OK				0
 #define MBOO_SCREEN_ERR		1
@@ -73,21 +79,18 @@ extern RECSERIES g_tblS[SERIES_MAX_NUMBERS];
 
 typedef struct _CONFIGINFO
 {
-	TCHAR	maindir[MAX_PATH];
+	TCHAR	basedir[MAX_PATH];
 	TCHAR	videodir[MAX_PATH];
 	TCHAR	dbfile[MAX_PATH];
 	TCHAR	logfile[MAX_PATH];
 	TCHAR	url[URL_MAX_LEN];
 	int		update_mode;
+	int		volume;		// 0 ~ 100
 } CONFIGINFO;
 
 extern CONFIGINFO g_configInfo;
 
-class CMainFrame;
-extern CMainFrame* g_pMainWnd;
-
 extern HFPC g_hFPC;
-//extern TCHAR g_MainDirectory[MAX_PATH];
 
 #define TITLE_MAX_LEN			256
 

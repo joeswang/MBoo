@@ -49,6 +49,19 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	bHandled = FALSE;
 	return 1;
 }
+LRESULT CMainFrame::OnChangeTile(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	TCHAR msg[MAX_PATH + 1] = {0};
+
+	RECVIDEO* p = (RECVIDEO*)lParam;
+	if(NULL == p) return 0;
+
+	_stprintf_s(msg, MAX_PATH, _T("麦宝播放器 - 当前视频 : [%s] %s"), p->name, p->title);
+
+	SetWindowText(msg);
+
+	return 0;
+}
 
 LRESULT CMainFrame::OnGetMinMaxInfo(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
@@ -87,14 +100,35 @@ LRESULT CMainFrame::OnFileOption(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	CDlgOption dlgOption;
 
 	if(IDOK != dlgOption.DoModal()) return 0;
-	//MessageBox(_T("Gooooooooooooooood"));
+	
+	m_view.UpdateVideoTree();
+	
 	return 0;
 }
 
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	CAboutDlg dlg;
-	dlg.DoModal();
+	//CAboutDlg dlg;
+	//dlg.DoModal();
+TCHAR path[MAX_PATH] = {0};
+sqlite3 *db;
+//sqlite3_stmt *stmt = NULL;
+//char *pcol = 0;
+int rc;
+//char sql[SQL_STMT_MAX_LEN] = {0};
+char spath[MAX_PATH] = {0};
+
+	StringCchCat(path, MAX_PATH, _T("C:\\temp\\MB汗\\video.db"));
+	//StringCchCat(path, MAX_PATH, _T("C:\\temp\\MB\\video.db"));
+	WideCharToMultiByte(CP_UTF8, 0, path, -1, spath, MAX_PATH, NULL, NULL);
+	//StringCchCat(path, MAX_PATH, _T("C:\\temp\\Mo\\video.db"));
+	rc = sqlite3_open(spath, &db);
+	if( rc )
+	{
+		//sqlite3_close(db);
+	}
+	sqlite3_close(db);
+	MessageBox(path);
 	return 0;
 }
 

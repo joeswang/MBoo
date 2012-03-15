@@ -194,6 +194,7 @@ LRESULT CVideoPanel::OnHScroll(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*
 	if(trackVolume.m_hWnd == (HWND)lParam)
 	{
 		pos = trackVolume.GetPos();
+		g_configInfo.volume = pos;
 		min = trackVolume.GetRangeMin();
 		max = trackVolume.GetRangeMax();
 		m_pFlashObject->SetSoundVolume(min, max, pos);
@@ -228,7 +229,8 @@ void CVideoPanel::UpdateVideoUI(VIDEOINFO* videoInfo)
 
 	trackVolume.SetRangeMin(0);
 	trackVolume.SetRangeMax(100);
-	trackVolume.SetPos(100);
+	//trackVolume.SetPos(100);
+	trackVolume.SetPos(g_configInfo.volume);
 	btnAudio.SetCheck(1);
 
 	if(1 == m_pFlashObject->IsPlaying())

@@ -4,10 +4,6 @@
 #include "define.h"
 #include "swflib/swflib.h"
 
-#define REQUEST_BUFFER_MAX_LEN	102400
-//#define RESPONSE_BUFFER_MAX_LEN	102400
-static char request_buf[REQUEST_BUFFER_MAX_LEN];
-//static TCHAR response_buf[RESPONSE_BUFFER_MAX_LEN];
 typedef struct _BBKRESULT
 {
 	LPTSTR result_buf;	
@@ -15,7 +11,7 @@ typedef struct _BBKRESULT
 } BBKRESULT;
 
 static BBKRESULT bbk_result;
-
+static char request_buf[REQUEST_BUFFER_MAX_LEN];
 
 
 UINT get_hash_index(LPCTSTR vid)
@@ -28,7 +24,7 @@ UINT len, sum = 0;
 	return ((sum << 2) % VIDEO_HASHTBL_SIZE);
 }
 
-void release_tblV(RECVIDEO** ptblV)
+void FreeVideoHashTbl(RECVIDEO** ptblV)
 {
 RECVIDEO *p, *n;
 
@@ -46,7 +42,7 @@ RECVIDEO *p, *n;
 	memset(ptblV, 0, sizeof(RECVIDEO*) * VIDEO_HASHTBL_SIZE);
 }
 
-RECVIDEO* find_video_in_hashtbl(LPCTSTR vid)
+RECVIDEO* lookup_video(LPCTSTR vid)
 {
 RECVIDEO* p = NULL;
 UINT idx = 0;
@@ -61,59 +57,53 @@ UINT idx = 0;
 	return NULL;
 }
 
-BOOL initilize_video_database(LPCTSTR dbfilename)
+BOOL initilize_video_database(LPCTSTR dbfilename, LPCTSTR videodir)
 {
 sqlite3 *db;
 sqlite3_stmt *stmt = NULL;
 int rc;
-char sql[SQL_STMT_MAX_LEN] = { 0 };
-TCHAR videodir[MAX_PATH] = { 0 };
+TCHAR sql[SQL_STMT_MAX_LEN] = { 0 };
 
-	StringCchCat(videodir, MAX_PATH, g_configInfo.maindir);
-	StringCchCat(videodir, MAX_PATH, _T("\\"));
-	StringCchCat(videodir, MAX_PATH, _T(DEFAULT_VIDEO_DIR));
-
-	rc = sqlite3_open(CT2A(dbfilename), &db);
-
-	sprintf_s(sql, SQL_STMT_MAX_LEN, 
-		"CREATE TABLE config(param INTEGER, idx INTEGER, intval INTEGER, charval CHAR(256), desc CHAR(256))");
-	sqlite3_prepare_v2(db, sql, -1, &stmt,NULL);
+	rc = sqlite3_open16(dbfilename, &db);
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, 
+		_T("CREATE TABLE config(param INTEGER, idx INTEGER, intval INTEGER, charval CHAR(256), desc CHAR(256))"));
+	sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL);
 	rc = sqlite3_step(stmt);
 	sqlite3_finalize(stmt);
 
-	sprintf_s(sql, SQL_STMT_MAX_LEN, 
-		"INSERT INTO config VALUES(0,1,0,'http://www.boobooke.com/qv.php', 'video query url')");
-	sqlite3_prepare_v2(db, sql, -1, &stmt,NULL);
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, 
+		_T("INSERT INTO config VALUES(0,1,0,'http://www.boobooke.com/qv.php', 'video query url')"));
+	sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL);
 	rc = sqlite3_step(stmt);
 	sqlite3_finalize(stmt);
 
-	sprintf_s(sql, SQL_STMT_MAX_LEN, 
-		"INSERT INTO config VALUES(1,1,0,'%s', 'local video directory')", CT2A(videodir));
-	sqlite3_prepare_v2(db, sql, -1, &stmt,NULL);
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, 
+		_T("INSERT INTO config VALUES(1,1,0,'%s', 'local video directory')"), videodir);
+	sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL);
 	rc = sqlite3_step(stmt);
 	sqlite3_finalize(stmt);
 
-	sprintf_s(sql, SQL_STMT_MAX_LEN, 
-		"INSERT INTO config VALUES(2,0,0,'', 'update database mode 0 - increamental, 1 - all')");
-	sqlite3_prepare_v2(db, sql, -1, &stmt,NULL);
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, 
+		_T("INSERT INTO config VALUES(2,0,0,'', 'update database mode 0 - increamental, 1 - all')"));
+	sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL);
 	rc = sqlite3_step(stmt);
 	sqlite3_finalize(stmt);
 
-	sprintf_s(sql, SQL_STMT_MAX_LEN, 
-		"CREATE TABLE series(sid INTEGER PRIMARY KEY, tutor CHAR(32), total INTEGER, title CHAR(256), summary CHAR(2048))");
-	sqlite3_prepare_v2(db, sql, -1, &stmt,NULL);
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, 
+		_T("CREATE TABLE series(sid INTEGER PRIMARY KEY, tutor CHAR(32), total INTEGER, title CHAR(256), summary CHAR(2048))"));
+	sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL);
 	rc = sqlite3_step(stmt);
 	sqlite3_finalize(stmt);
 
-	sprintf_s(sql, SQL_STMT_MAX_LEN, 
-		"INSERT INTO series VALUES(0, '各种老师都有', 0, '不成系列的视频', '没有系列的视频')");
-	sqlite3_prepare_v2(db, sql, -1, &stmt,NULL);
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, 
+		_T("INSERT INTO series VALUES(0, '各种老师都有', 0, '不成系列的视频', '没有系列的视频')"));
+	sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL);
 	rc = sqlite3_step(stmt);
 	sqlite3_finalize(stmt);
 
-	sprintf_s(sql, SQL_STMT_MAX_LEN, 
-		"CREATE TABLE video(vid CHAR(13) PRIMARY KEY, tutor CHAR(32), sid INTEGER, idx INTEGER, title CHAR(256), FOREIGN KEY(sid) REFERENCES series(sid))");
-	sqlite3_prepare_v2(db, sql, -1, &stmt,NULL);
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, 
+		_T("CREATE TABLE video(vid CHAR(13) PRIMARY KEY, tutor CHAR(32), sid INTEGER, idx INTEGER, title CHAR(256), FOREIGN KEY(sid) REFERENCES series(sid))"));
+	sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL);
 	rc = sqlite3_step(stmt);
 	sqlite3_finalize(stmt);
 
@@ -145,14 +135,15 @@ TCHAR vf[MAX_PATH] = { 0 };
 		if(_T('0') > dirname[i] || _T('9') < dirname[i]) return FALSE;
 	}
 
-	vf[0] = 0;
+	//vf[0] = 0;
+	memset(vf, 0, sizeof(vf));
 	StringCchCat(vf, MAX_PATH, filepath);
 	StringCchCat(vf, MAX_PATH, _T("\\"));
 	StringCchCat(vf, MAX_PATH, _T(DEFAULT_VIDEO_FILE));
 	hVideoFile = FindFirstFile(vf, &findata);
 	if(INVALID_HANDLE_VALUE == hVideoFile)
 	{
-		vf[0] = 0;
+		memset(vf, 0, MAX_PATH * sizeof(TCHAR));
 		StringCchCat(vf, MAX_PATH, filepath);
 		StringCchCat(vf, MAX_PATH, _T("\\"));
 		StringCchCat(vf, MAX_PATH, dirname);
@@ -163,7 +154,7 @@ TCHAR vf[MAX_PATH] = { 0 };
 
 	//if(FILE_ATTRIBUTE_DIRECTORY != videodata.dwFileAttributes) return FALSE;
 	memset(&swf, 0, sizeof(SWF));
-	ret = swf_ReadSWFInfo(CT2A(vf), &swf);
+	ret = swf_ReadSWFInfo(vf, &swf);
 	if(ret < 0) return FALSE;
 	if(swf.movieSize.xmin != 0 || swf.movieSize.ymin != 0 
 			|| swf.movieSize.xmax != 20 * VIDEO_MIN_WIDTH || swf.movieSize.ymax != 20 * VIDEO_MIN_HEIGHT)
@@ -196,13 +187,12 @@ TCHAR path[MAX_PATH] = {0};
 		return 0;
 	}
 
-	release_tblV(g_ptblV);
+	FreeVideoHashTbl(g_ptblV);
 
 	memset(path, 0, sizeof(path));
 	StringCchCat(path, MAX_PATH, g_configInfo.videodir);
 	StringCchCat(path, MAX_PATH, _T("\\"));
 	StringCchCat(path, MAX_PATH, findata.cFileName);
-	//StringCchCat(path, MAX_PATH, _T("\\video.swf"));
 	if(is_valid_bbk_video(findata.cFileName, path))
 	{
 		idx = get_hash_index(findata.cFileName);
@@ -225,7 +215,6 @@ TCHAR path[MAX_PATH] = {0};
 		StringCchCat(path, MAX_PATH, g_configInfo.videodir);
 		StringCchCat(path, MAX_PATH, _T("\\"));
 		StringCchCat(path, MAX_PATH, findata.cFileName);
-		//StringCchCat(path, MAX_PATH, _T("\\video.swf"));
 		if(!is_valid_bbk_video(findata.cFileName, path)) continue;
 
 		pVNode = (RECVIDEO*)malloc(sizeof(RECVIDEO));
@@ -252,24 +241,24 @@ void check_videodb_info()
 RECVIDEO *p;
 sqlite3 *db;
 sqlite3_stmt *stmt = NULL;
-char *pcol = NULL;
+LPCTSTR pvid = NULL;
 int rc;
 UINT idx;
 TCHAR path[MAX_PATH] = {0};
-char sql[SQL_STMT_MAX_LEN] = {0};
+TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 
 	memset(path, 0, sizeof(path));
-	StringCchCat(path, MAX_PATH, g_configInfo.maindir);
+	StringCchCat(path, MAX_PATH, g_configInfo.basedir);
 	StringCchCat(path, MAX_PATH, _T("\\"));
 	StringCchCat(path, MAX_PATH, _T(DEFAULT_VIDEO_DB));
-	rc = sqlite3_open(CT2A(path), &db);
+	rc = sqlite3_open16(path, &db);
 	if( rc )
 	{
 		sqlite3_close(db);
 		return;
 	}
-	sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT vid FROM video ORDER BY 1");
-	if(SQLITE_OK != sqlite3_prepare_v2(db, sql, -1, &stmt,NULL))
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT vid FROM video ORDER BY 1"));
+	if(SQLITE_OK != sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL))
 	{
 		sqlite3_finalize(stmt);
 		sqlite3_close(db);
@@ -280,14 +269,12 @@ char sql[SQL_STMT_MAX_LEN] = {0};
 		rc = sqlite3_step(stmt);
 		if(SQLITE_ROW != rc) break;
 
-		pcol = (char*)sqlite3_column_text(stmt,0); // vid
-		CA2T szVID(pcol, CP_ACP);
-			// lookup the video hash table to find this video record
-		idx = get_hash_index(szVID);
+		pvid = (LPCTSTR)sqlite3_column_text16(stmt,0); // vid
+		idx = get_hash_index(pvid);
 		p = g_ptblV[idx];
 		while(NULL != p)
 		{
-			if(0 == _tcscmp(p->name, szVID))
+			if(0 == _tcscmp(p->name, pvid))
 			{
 				p->db = TRUE;
 				break;
@@ -309,10 +296,7 @@ RECVIDEO* p = NULL;
 sqlite3 *db;
 sqlite3_stmt *stmt = NULL;
 int rc;
-char sql[SQL_STMT_MAX_LEN] = { 0 };
-char buf0[TUTOR_NAME_MAX_LEN + 1];
-char buf1[VIDEO_TITLE_MAX_LEN + 1];
-char buf2[VIDEO_FILENAME_MAX_LEN + 1];
+TCHAR sql[SQL_STMT_MAX_LEN] = { 0 };
 TCHAR tmpbuf[VIDEO_TITLE_MAX_LEN + 1] = { 0 };
 
 	if(NULL == result) return FALSE;
@@ -396,7 +380,7 @@ TCHAR tmpbuf[VIDEO_TITLE_MAX_LEN + 1] = { 0 };
 				if(R - L > VIDEO_FILENAME_MAX_LEN) continue; // too long
 				memset(tmpbuf, 0, VIDEO_TITLE_MAX_LEN + 1);
 				for(k=L; k<R; k++) tmpbuf[k-L] = result->result_buf[k];  // vid
-				p = find_video_in_hashtbl(tmpbuf);
+				p = lookup_video(tmpbuf);
 				if(NULL == p) continue;  // cannot find the video node in the hash table
 				
 				j = R + 1; 
@@ -447,34 +431,38 @@ TCHAR tmpbuf[VIDEO_TITLE_MAX_LEN + 1] = { 0 };
 		result->len = 0;
 	}
 
-	rc = sqlite3_open(CT2A(g_configInfo.dbfile), &db);
+	rc = sqlite3_open16(g_configInfo.dbfile, &db);
 
 	if(1 == g_configInfo.update_mode) // clean the series and video table in the database
 	{
-		sprintf_s(sql, SQL_STMT_MAX_LEN,  "DELETE FROM video");
-		sqlite3_prepare_v2(db, sql, -1, &stmt,NULL);
+		_stprintf_s(sql, SQL_STMT_MAX_LEN,  _T("DELETE FROM video"));
+		sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL);
 		rc = sqlite3_step(stmt);
 		sqlite3_finalize(stmt);
 
-		sprintf_s(sql, SQL_STMT_MAX_LEN,  "DELETE FROM series WHERE sid <> 0");
-		sqlite3_prepare_v2(db, sql, -1, &stmt,NULL);
+		_stprintf_s(sql, SQL_STMT_MAX_LEN,  _T("DELETE FROM series WHERE sid <> 0"));
+		sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL);
 		rc = sqlite3_step(stmt);
 		sqlite3_finalize(stmt);
 	}
 
 	for(i=0; i<idx; i++)
 	{
-		memset(buf0, 0, TUTOR_NAME_MAX_LEN + 1);
-		sprintf_s(buf0, TUTOR_NAME_MAX_LEN,  "%s", CT2A(g_tblS[i].tutor));
-		memset(buf1, 0, VIDEO_TITLE_MAX_LEN + 1);
-		sprintf_s(buf1, VIDEO_TITLE_MAX_LEN,  "%s", CT2A(g_tblS[i].title));
-
-		sprintf_s(sql, SQL_STMT_MAX_LEN,  "INSERT INTO series VALUES(%d, '%s', %d, '%s', NULL)", 
-			g_tblS[i].sid, buf0, g_tblS[i].total, buf1);
-		sqlite3_prepare_v2(db, sql, -1, &stmt,NULL);
+		int count;
+		_stprintf_s(sql, SQL_STMT_MAX_LEN,  _T("SELECT count(1) FROM series WHERE sid=%d"), g_tblS[i].sid); 
+		sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL);
 		rc = sqlite3_step(stmt);
+		count = sqlite3_column_int(stmt, 0);
 		sqlite3_finalize(stmt);
 
+		if(count == 0)
+		{
+			_stprintf_s(sql, SQL_STMT_MAX_LEN,  _T("INSERT INTO series VALUES(%d, '%s', %d, '%s', NULL)"), 
+				g_tblS[i].sid, g_tblS[i].tutor, g_tblS[i].total, g_tblS[i].title);
+			sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL);
+			rc = sqlite3_step(stmt);
+			sqlite3_finalize(stmt);
+		}
 	}
 
 	for(i=0; i<VIDEO_HASHTBL_SIZE; i++)
@@ -485,16 +473,9 @@ TCHAR tmpbuf[VIDEO_TITLE_MAX_LEN + 1] = { 0 };
 		{
 			if(FALSE == p->db && 0 < _tcslen(p->title))
 			{
-				memset(buf0, 0, TUTOR_NAME_MAX_LEN + 1);
-				sprintf_s(buf0, TUTOR_NAME_MAX_LEN,  "%s", CT2A(p->tutor));
-				memset(buf1, 0, VIDEO_TITLE_MAX_LEN + 1);
-				sprintf_s(buf1, VIDEO_TITLE_MAX_LEN,  "%s", CT2A(p->title));
-				memset(buf2, 0, VIDEO_FILENAME_MAX_LEN + 1);
-				sprintf_s(buf2, VIDEO_FILENAME_MAX_LEN,  "%s", CT2A(p->name));
-
-				sprintf_s(sql, SQL_STMT_MAX_LEN,  "INSERT INTO video VALUES('%s', '%s', %d, %d, '%s')", 
-					buf2, buf0, p->sid, p->idx, buf1);
-				sqlite3_prepare_v2(db, sql, -1, &stmt,NULL);
+				_stprintf_s(sql, SQL_STMT_MAX_LEN,  _T("INSERT INTO video VALUES('%s', '%s', %d, %d, '%s')"), 
+					p->name, p->tutor, p->sid, p->idx, p->title);
+				sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL);
 				rc = sqlite3_step(stmt);
 				sqlite3_finalize(stmt);
 			}
@@ -622,15 +603,14 @@ HWND hWndUI;
 int count;
 UINT idx;
 RECVIDEO *p, *current, *pVNode = NULL;
-TCHAR path[MAX_PATH] = {0};
 sqlite3 *db;
 sqlite3_stmt *stmt0 = NULL;
 sqlite3_stmt *stmt1 = NULL;
-char *pcol = NULL;
+//LPCTSTR pcol = NULL;
+LPCTSTR pcol0, pcol1;
 int rc;
-char sql[SQL_STMT_MAX_LEN] = {0};
-TCHAR buf0[VIDEO_TITLE_MAX_LEN];
-TCHAR buf1[VIDEO_TITLE_MAX_LEN];
+TCHAR path[MAX_PATH] = {0};
+TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 
 	hWndUI = (HWND)data;
 	if(NULL == hWndUI) return;
@@ -640,19 +620,19 @@ TCHAR buf1[VIDEO_TITLE_MAX_LEN];
 	if(0 == count) return;  // no video found
 
 	memset(path, 0, sizeof(path));
-	StringCchCat(path, MAX_PATH, g_configInfo.maindir);
+	StringCchCat(path, MAX_PATH, g_configInfo.basedir);
 	StringCchCat(path, MAX_PATH, _T("\\"));
 	StringCchCat(path, MAX_PATH, _T(DEFAULT_VIDEO_DB));
 	
-	rc = sqlite3_open(CT2A(path), &db);
+	rc = sqlite3_open16(path, &db);
 	if( rc )
 	{
 		sqlite3_close(db);
 		::PostMessage(hWndUI, WM_UPDATE_VIDEO_TREE, 0, 0);
 		return;
 	}
-	sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT sid, tutor, total, title, summary FROM series ORDER BY 1");
-	if(SQLITE_OK != sqlite3_prepare_v2(db, sql, -1, &stmt0,NULL))
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT sid, total, tutor, title, summary FROM series ORDER BY 1"));
+	if(SQLITE_OK != sqlite3_prepare16_v2(db, sql, -1, &stmt0,NULL))
 	{
 		sqlite3_finalize(stmt0);
 		sqlite3_close(db);
@@ -672,21 +652,16 @@ TCHAR buf1[VIDEO_TITLE_MAX_LEN];
 			break;
 		}
 		g_tblS[i].valid = TRUE;
-		int sid = sqlite3_column_int(stmt0,0); // sid
-		g_tblS[i].sid = sid;
-		pcol = (char*)sqlite3_column_text(stmt0,1); // tutor
-		CA2T szTUTOR(pcol, CP_ACP);
-		g_tblS[i].total = sqlite3_column_int(stmt0, 2); // total
-		pcol = (char*)sqlite3_column_text(stmt0,3); // title
-		CA2T szTITLE(pcol, CP_ACP);
-		memset(buf0, 0, VIDEO_TITLE_MAX_LEN);
-		memset(buf1, 0, VIDEO_TITLE_MAX_LEN);
-		_stprintf_s(buf0, VIDEO_TITLE_MAX_LEN, _T("%s"), szTUTOR);
-		_stprintf_s(buf1, VIDEO_TITLE_MAX_LEN, _T("%s"), szTITLE);
-		_stprintf_s(g_tblS[i].title, VIDEO_TITLE_MAX_LEN, _T("[系列%d/共%d集]: %s - %s"), sid, g_tblS[i].total, buf0, buf1);
+		g_tblS[i].sid = sqlite3_column_int(stmt0,0); // sid
+		g_tblS[i].total = sqlite3_column_int(stmt0, 1); // total
+		pcol0 = (LPCTSTR)sqlite3_column_text16(stmt0,2); // tutor
+		StringCchCat(g_tblS[i].tutor, TUTOR_NAME_MAX_LEN, pcol0);
 
-		sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT vid, idx, title FROM video WHERE sid=%d ORDER BY idx", sid);
-		if(SQLITE_OK != sqlite3_prepare_v2(db, sql, -1, &stmt1,NULL))
+		pcol1 = (LPCTSTR)sqlite3_column_text16(stmt0,3); // title
+		_stprintf_s(g_tblS[i].title, VIDEO_TITLE_MAX_LEN, _T("[系列%d/共%d集]: %s - %s"), g_tblS[i].sid, g_tblS[i].total, pcol0, pcol1);
+
+		_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT vid, idx, title FROM video WHERE sid=%d ORDER BY idx"), g_tblS[i].sid);
+		if(SQLITE_OK != sqlite3_prepare16_v2(db, sql, -1, &stmt1,NULL))
 		{
 			sqlite3_finalize(stmt1);
 			continue;
@@ -700,20 +675,20 @@ TCHAR buf1[VIDEO_TITLE_MAX_LEN];
 			{
 				break;
 			}
-			pcol = (char*)sqlite3_column_text(stmt1,0);	  // vid
-			CA2T szVID(pcol, CP_ACP);
+			pcol0 = (LPCTSTR)sqlite3_column_text16(stmt1,0);	  // vid
+			//CA2T szVID(pcol, CP_ACP);
 			// lookup the video hash table to find this video record
-			idx = get_hash_index(szVID);
+			idx = get_hash_index(pcol0);
 			p = g_ptblV[idx];
 			while(NULL != p)
 			{
-				if(0 == _tcscmp(p->name, szVID))
+				if(0 == _tcscmp(p->name, pcol0))
 				{
 					p->db = TRUE;
 					p->idx = sqlite3_column_int(stmt1, 1);  // idx;
-					pcol = (char*)sqlite3_column_text(stmt1,2);	  // title
-					CA2T szT(pcol, CP_ACP);
-					StringCchCat(p->title, VIDEO_TITLE_MAX_LEN, szT);
+					pcol1 = (LPCTSTR)sqlite3_column_text16(stmt1,2);	  // title
+					//CA2T szT(pcol, CP_ACP);
+					StringCchCat(p->title, VIDEO_TITLE_MAX_LEN, pcol1);
 					break;
 				}
 				p = p->next;
@@ -732,6 +707,7 @@ TCHAR buf1[VIDEO_TITLE_MAX_LEN];
 			}
 		}
 		sqlite3_finalize(stmt1);
+
 	}
 
 	sqlite3_finalize(stmt0);

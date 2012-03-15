@@ -35,7 +35,11 @@ extern CAppModule _Module;
 
 // for f_in_box 
 #include "../deps/finbox/include/f_in_box.h"
+#ifdef _DEBUG
+#pragma comment(lib, "../deps/finbox/lib/f_in_boxD.lib")
+#else
 #pragma comment(lib, "../deps/finbox/lib/f_in_box.lib")
+#endif
 
 // for SkinSE
 #include "../deps/SkinSE/include/SkinSE.h"

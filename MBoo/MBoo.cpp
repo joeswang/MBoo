@@ -10,6 +10,7 @@
 #include "aboutdlg.h"
 #include "MainFrm.h"
 #include "VideoData.h"
+#include "DlgWizard.h"
 
 // the global variables
 HFPC g_hFPC = NULL;
@@ -17,12 +18,73 @@ VIDEOINFO	g_videoInfo;
 CONFIGINFO	g_configInfo;
 RECVIDEO* g_ptblV[VIDEO_HASHTBL_SIZE] = { 0 };
 RECSERIES g_tblS[SERIES_MAX_NUMBERS] = { 0 };
-CMainFrame* g_pMainWnd = NULL;
 
 CAppModule _Module;
 
-BOOL GetConfigInfo(CONFIGINFO*);
+BOOL GetConfigInfo();
 
+BOOL InitInstance()
+{
+CURLcode res;
+int sw, sh;
+TCHAR msg[UI_MESSAGE_MAX_LEN] = {0};
+
+	sw = GetSystemMetrics(SM_CXSCREEN);
+	sh = GetSystemMetrics(SM_CYSCREEN);
+	if(sw < SCREEN_MIN_WIDTH || sh < SCREEN_MIN_HEIGHT)
+	{
+		_stprintf_s(msg, UI_MESSAGE_MAX_LEN, _T("你的电脑屏幕分辨率必须至少为 %d X %d 或者以上，才能够运行本软件！"), SCREEN_MIN_WIDTH, SCREEN_MIN_HEIGHT);
+		::MessageBox(NULL, msg, _T("系统分辨率太低"),MB_OK);
+		return FALSE;
+	}
+	g_hFPC = FPC_LoadRegisteredOCX();
+	if (NULL == g_hFPC)
+	{
+		::MessageBox(NULL, _T("你的系统尚未安装Flash播放器插件！"), _T("未检测到Flash插件"),MB_OK);
+		return FALSE;
+	}
+
+	res = curl_global_init(CURL_GLOBAL_ALL);
+	if(CURLE_OK != res)
+	{
+		::MessageBox(NULL, _T("加载Libcurl库出错！"), _T("系统错误"),MB_OK);
+		return FALSE;
+	}
+	
+	if(FALSE == GetConfigInfo())
+	{
+		//::MessageBox(NULL, _T("读取系统配置文件出错！"), _T("系统错误"),MB_OK);
+		return FALSE;
+	}
+	::SkinSE_LoadSkinResourceFromFolder(_T("skin"));
+
+	//memset(msg, 0, UI_MESSAGE_MAX_LEN);
+	//StringCchCat(msg, UI_MESSAGE_MAX_LEN, g_configInfo.basedir);
+	//StringCchCat(msg, UI_MESSAGE_MAX_LEN, _T("\\skin.zip"));
+
+	//::SkinSE_LoadSkinResourceFromZIP(msg, NULL);
+
+	memset(g_ptblV, 0, sizeof(g_ptblV));
+	memset(g_tblS, 0, sizeof(g_tblS));
+
+	return TRUE;
+}
+
+int ExitInstance()
+{
+	//----------------- Our Cleanup Job---------------------
+	FreeVideoHashTbl(g_ptblV);
+
+	curl_global_cleanup();
+
+	if (NULL != g_hFPC)
+	{
+		FPC_UnloadCode(g_hFPC);
+		g_hFPC = NULL;
+	}
+
+	return 0;
+}
 
 int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
@@ -37,7 +99,7 @@ int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		ATLTRACE(_T("Main window creation failed!\n"));
 		return 0;
 	}
-	g_pMainWnd = &wndMain;
+
 	wndMain.CenterWindow();
 	wndMain.ShowWindow(nCmdShow);
 
@@ -50,42 +112,8 @@ int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow)
 {
-CURLcode res;
-int sw, sh;
+	if(FALSE == InitInstance()) return 0;
 	
-	sw = GetSystemMetrics(SM_CXSCREEN);
-	sh = GetSystemMetrics(SM_CYSCREEN);
-	if(sw < SCREEN_MIN_WIDTH || sh < SCREEN_MIN_HEIGHT)
-	{
-		::MessageBox(NULL, _T("你的电脑屏幕分辨率必须至少为1024X768或者以上，才能够运行本软件！"), _T("系统分辨率太低"),MB_OK);
-		return 0;
-	}
-	g_hFPC = FPC_LoadRegisteredOCX();
-	if (NULL == g_hFPC)
-	{
-		::MessageBox(NULL, _T("你的系统尚未安装Flash播放器插件！"), _T("未检测到Flash插件"),MB_OK);
-		return 0;
-	}
-
-	res = curl_global_init(CURL_GLOBAL_ALL);
-	if(CURLE_OK != res)
-	{
-		::MessageBox(NULL, _T("加载Libcurl库出错！"), _T("系统错误"),MB_OK);
-		return 0;
-	}
-	
-	memset(g_ptblV, 0, sizeof(g_ptblV));
-	memset(g_tblS, 0, sizeof(g_tblS));
-
-	if(FALSE == GetConfigInfo(&g_configInfo))
-	{
-		::MessageBox(NULL, _T("读取系统配置文件出错！"), _T("系统错误"),MB_OK);
-		return 0;
-	}
-
-	::SkinSE_LoadSkinResourceFromFolder(_T("skin"));
-	//----------------- Our Initialized Job Done!------------------
-
 	HRESULT hRes = ::CoInitialize(NULL);
 // If you are running on NT 4.0 or higher you can use the following call instead to 
 // make the EXE free threaded. This means that calls come in on a random RPC thread.
@@ -105,116 +133,109 @@ int sw, sh;
 	_Module.Term();
 	::CoUninitialize();
 
-	//----------------- Our Cleanup Job---------------------
-	release_tblV(g_ptblV);
-
-	curl_global_cleanup();
-
-	if (NULL != g_hFPC)
-	{
-		FPC_UnloadCode(g_hFPC);
-		g_hFPC = NULL;
-	}
+	ExitInstance();
 
 	return nRet;
 }
 
-
-
-BOOL GetConfigInfo(CONFIGINFO* pcfgInfo)
+BOOL GetConfigInfo()
 {
+BOOL ret;
 WIN32_FIND_DATA findata;
 HANDLE hFile;
 sqlite3 *db;
 sqlite3_stmt *stmt = NULL;
-char *pcol = 0;
+LPCTSTR pcol0 = NULL;
 int rc;
-char sql[SQL_STMT_MAX_LEN] = {0};
-TCHAR path[MAX_PATH] = {0};
+TCHAR sql[SQL_STMT_MAX_LEN] = {0};
+TCHAR msg[UI_MESSAGE_MAX_LEN] = {0};
 
-	if(NULL == pcfgInfo) return FALSE;
+	memset(&g_configInfo, 0, sizeof(CONFIGINFO));
+	g_configInfo.update_mode = 0;
+	g_configInfo.volume = 100;
 
-	memset(pcfgInfo, 0, sizeof(CONFIGINFO));
-
-	if(0 == ::GetCurrentDirectory(MAX_PATH, pcfgInfo->maindir))
+	if(0 == ::GetCurrentDirectory(MAX_PATH, g_configInfo.basedir))
 	{
-		//::MessageBox(NULL, _T("无法获得可执行文件的目录！"), _T("系统错误"),MB_OK);
 		return FALSE;
 	}
-	//if(_tcslen(pcfgInfo->maindir) == 0) return FALSE;
-	/*
-	StringCchCat(pcfgInfo->url, URL_MAX_LEN, _T(DEFAULT_QUERY_URL));
-	StringCchCat(pcfgInfo->videodir, MAX_PATH, pcfgInfo->maindir);
-	StringCchCat(pcfgInfo->videodir, MAX_PATH, _T("\\"));
-	StringCchCat(pcfgInfo->videodir, MAX_PATH, _T(DEFAULT_VIDEO_DIR));
-	pcfgInfo->update_mode = 0;
-	*/
-	StringCchCat(path, MAX_PATH, pcfgInfo->maindir);
-	StringCchCat(path, MAX_PATH, _T("\\"));
-	StringCchCat(path, MAX_PATH, _T(DEFAULT_VIDEO_DB));
-	StringCchCat(pcfgInfo->dbfile, MAX_PATH, path);
 
-	hFile = FindFirstFile(path, &findata);
+	StringCchCat(g_configInfo.dbfile, MAX_PATH, g_configInfo.basedir);
+	StringCchCat(g_configInfo.dbfile, MAX_PATH, _T("\\"));
+	StringCchCat(g_configInfo.dbfile, MAX_PATH, _T(DEFAULT_VIDEO_DB));
+
+	StringCchCat(g_configInfo.url, URL_MAX_LEN, _T(DEFAULT_QUERY_URL));
+
+	StringCchCat(g_configInfo.videodir, MAX_PATH, g_configInfo.basedir);
+	StringCchCat(g_configInfo.videodir, MAX_PATH, _T("\\"));
+	StringCchCat(g_configInfo.videodir, MAX_PATH, _T(DEFAULT_VIDEO_DIR));
+
+	hFile = FindFirstFile(g_configInfo.dbfile, &findata);
 	if(INVALID_HANDLE_VALUE == hFile) // if we cannot find the video.db database, then we will create a fresh one.
 	{
-		initilize_video_database(path);
-		// return TRUE;
+		CDlgWizard dlgWZD;
+		if(IDOK != dlgWZD.DoModal()) return FALSE;  // will change the g_configInfo.videodir here
+		ret = initilize_video_database(g_configInfo.dbfile, g_configInfo.videodir);
+		hFile = FindFirstFile(g_configInfo.dbfile, &findata); // find the datbase file again!
+		if(!ret || INVALID_HANDLE_VALUE == hFile) // still cannot find this database file
+		{
+			_stprintf_s(msg, UI_MESSAGE_MAX_LEN, _T("无法创建数据库文件: %s"), g_configInfo.dbfile);
+			::MessageBox(NULL, msg, _T("系统错误"),MB_OK);
+			return FALSE;
+		}
+		else
+		{
+			return TRUE;
+		}
 	}
 
-	rc = sqlite3_open(CT2A(path), &db);
+	rc = sqlite3_open16(g_configInfo.dbfile, &db);
 	if( rc )
 	{
 		sqlite3_close(db);
-		StringCchCat(pcfgInfo->url, URL_MAX_LEN, _T(DEFAULT_QUERY_URL));
-		StringCchCat(pcfgInfo->videodir, MAX_PATH, pcfgInfo->maindir);
-		StringCchCat(pcfgInfo->videodir, MAX_PATH, _T("\\"));
-		StringCchCat(pcfgInfo->videodir, MAX_PATH, _T(DEFAULT_VIDEO_DIR));
-		pcfgInfo->update_mode = 0;
 		return TRUE;
 	}
 
-	sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT charval FROM config WHERE param = %d", PARAM_QUERY_URL);
-	if(SQLITE_OK == sqlite3_prepare_v2(db, sql, -1, &stmt,NULL))
+	memset(sql, 0, SQL_STMT_MAX_LEN);
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT charval FROM config WHERE param = %d"), PARAM_QUERY_URL);
+	if(SQLITE_OK == sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL))
 	{
 		rc = sqlite3_step(stmt);
 		if(SQLITE_ROW == rc)
 		{
-			pcol = (char*)sqlite3_column_text(stmt,0);
-			CA2T szURL(pcol, CP_ACP);
-			pcfgInfo->url[0] = 0x00;
-			StringCchCat(pcfgInfo->url, URL_MAX_LEN, szURL);
+			pcol0 = (LPCTSTR)sqlite3_column_text16(stmt,0);
+			memset(g_configInfo.url, 0, URL_MAX_LEN);
+			StringCchCat(g_configInfo.url, URL_MAX_LEN, pcol0);
 		}
 	}
 	sqlite3_finalize(stmt);
 
-	sprintf_s(sql, SQL_STMT_MAX_LEN, "SELECT charval FROM config WHERE param = %d", PARAM_VIDEO_DIR);
-	if(SQLITE_OK == sqlite3_prepare_v2(db, sql, -1, &stmt,NULL))
+	memset(sql, 0, SQL_STMT_MAX_LEN);
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT charval FROM config WHERE param = %d"), PARAM_VIDEO_DIR);
+	if(SQLITE_OK == sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL))
 	{
 		rc = sqlite3_step(stmt);
 		if(SQLITE_ROW == rc)
 		{
-			pcol = (char*)sqlite3_column_text(stmt,0);
-			CA2T szVDIR(pcol, CP_ACP);
-			pcfgInfo->videodir[0] = 0x00;
-			StringCchCat(pcfgInfo->videodir, MAX_PATH, szVDIR);
+			pcol0 = (LPCTSTR)sqlite3_column_text16(stmt,0);
+			memset(g_configInfo.videodir, 0, MAX_PATH);
+			StringCchCat(g_configInfo.videodir, MAX_PATH, pcol0);
 		}
 	}
 	sqlite3_finalize(stmt);
+
+	memset(sql, 0, SQL_STMT_MAX_LEN);
+	_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT charval FROM config WHERE param = %d"), PARAM_UPDATE_MODE);
+	if(SQLITE_OK == sqlite3_prepare16_v2(db, sql, -1, &stmt,NULL))
+	{
+		rc = sqlite3_step(stmt);
+		if(SQLITE_ROW == rc)
+		{
+			g_configInfo.update_mode = sqlite3_column_int(stmt,0);
+		}
+	}
+	sqlite3_finalize(stmt);
+
 	sqlite3_close(db);
-
-	if(0 == _tcslen(pcfgInfo->url))
-	{
-		StringCchCat(pcfgInfo->url, URL_MAX_LEN, _T(DEFAULT_QUERY_URL));
-	}
-
-	if(0 == _tcslen(pcfgInfo->videodir))
-	{
-		StringCchCat(pcfgInfo->videodir, MAX_PATH, pcfgInfo->maindir);
-		StringCchCat(pcfgInfo->videodir, MAX_PATH, _T("\\"));
-		StringCchCat(pcfgInfo->videodir, MAX_PATH, _T(DEFAULT_VIDEO_DIR));
-	}
-
-	pcfgInfo->update_mode = 1;
 
 	return TRUE;
 }

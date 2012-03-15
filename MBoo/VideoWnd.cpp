@@ -16,7 +16,8 @@ HWND CVideoWnd::Create(HWND hwndParent)
 	if(NULL == hwndParent) return NULL;
 	if(NULL != m_hWnd) return m_hWnd;
 
-	m_hWnd = CreateWindow((LPCTSTR)FPC_GetClassAtom(g_hFPC), 
+	m_hWnd = FPC_CreateWindow(g_hFPC,
+						 0,
 						 NULL, 
 						 WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE, 
 						 rc.left, 

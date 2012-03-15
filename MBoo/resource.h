@@ -11,6 +11,7 @@
 #define IDD_DLG_PANEL                   129
 #define IDD_DLG_LIST                    130
 #define IDD_DLG_OPTION                  131
+#define IDD_DLG_WIZARD					132
 
 #define IDR_BITMAP_LOCK					200
 #define IDR_BITMAP_BKGROUND				201
@@ -31,6 +32,9 @@
 #define IDC_OPTION_RBN_NEW				1513
 #define IDC_OPTION_RBN_ALL				1514
 #define IDC_OPTION_BTN_BROWSE			1515
+
+#define	IDC_WIZARD_EDIT_DIR				1701
+#define	IDC_WIZARD_BTN_BROWSE			1702
 
 #define ID_FILE_OPTION					3000
 #define ID_EDIT_CAPTURE					3010
