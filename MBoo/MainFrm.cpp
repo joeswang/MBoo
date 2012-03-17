@@ -108,27 +108,8 @@ LRESULT CMainFrame::OnFileOption(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	//CAboutDlg dlg;
-	//dlg.DoModal();
-TCHAR path[MAX_PATH] = {0};
-sqlite3 *db;
-//sqlite3_stmt *stmt = NULL;
-//char *pcol = 0;
-int rc;
-//char sql[SQL_STMT_MAX_LEN] = {0};
-char spath[MAX_PATH] = {0};
-
-	StringCchCat(path, MAX_PATH, _T("C:\\temp\\MBº¹\\video.db"));
-	//StringCchCat(path, MAX_PATH, _T("C:\\temp\\MB\\video.db"));
-	WideCharToMultiByte(CP_UTF8, 0, path, -1, spath, MAX_PATH, NULL, NULL);
-	//StringCchCat(path, MAX_PATH, _T("C:\\temp\\Mo\\video.db"));
-	rc = sqlite3_open(spath, &db);
-	if( rc )
-	{
-		//sqlite3_close(db);
-	}
-	sqlite3_close(db);
-	MessageBox(path);
+	CAboutDlg dlg;
+	dlg.DoModal();
 	return 0;
 }
 
