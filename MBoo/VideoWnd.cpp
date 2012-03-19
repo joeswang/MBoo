@@ -63,8 +63,10 @@ BOOL CVideoWnd::PlayFlashVideo(LPCTSTR lpszURL)
 	FPCPutMovie.lpszBuffer = lpszURL;
 
 	::SendMessage(m_hWnd, FPCM_PUT_MOVIE, 0, (LPARAM)&FPCPutMovie);
-
-	::Sleep(500);
+	
+	FPC_SetSoundVolume(g_hFPC, g_configInfo.volume * DEF_MAX_FLASH_AUDIO_VOLUME / 100);
+	
+	//::Sleep(500);
 
 	FPC_Play(m_hWnd);
 
@@ -196,10 +198,13 @@ HRESULT CVideoWnd::SetSoundVolume(int min, int max, int pos)
 
 HRESULT CVideoWnd::SetProgress(int min, int max, int pos)
 {
+BOOL bIsPlaying = FALSE;
 	SFPCGotoFrame info;
 
 	if(NULL == m_hWnd) return FALSE;
 	
+	if(1 == IsPlaying()) bIsPlaying = TRUE;
+
 	info.FrameNum = pos;
 	::SendMessage(m_hWnd, FPCM_GOTOFRAME, 0, (LPARAM)&info);
 
@@ -209,5 +214,11 @@ HRESULT CVideoWnd::SetProgress(int min, int max, int pos)
 		//MessageBox(_T("Stop Operation Failed!"));
 		return -1;
 	}
+
+	if(bIsPlaying)
+	{
+		FPC_Play(m_hWnd);
+	}
+
 	return 0;
 }
