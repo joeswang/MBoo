@@ -172,6 +172,8 @@ UINT idx;
 TCHAR path[MAX_PATH] = {0};
 
 	// Scan the local video directory to update the video infomation
+	FreeVideoHashTbl(g_ptblV);
+
 	memset(path, 0, sizeof(path));
 	StringCchCat(path, MAX_PATH, g_configInfo.videodir);
 	StringCchCat(path, MAX_PATH, _T("\\bbk*"));
@@ -182,34 +184,31 @@ TCHAR path[MAX_PATH] = {0};
 		return 0;
 	}
 
-	if(FILE_ATTRIBUTE_DIRECTORY != findata.dwFileAttributes)
+	if(0 != (FILE_ATTRIBUTE_DIRECTORY & findata.dwFileAttributes))
 	{
-		return 0;
-	}
-
-	FreeVideoHashTbl(g_ptblV);
-
-	memset(path, 0, sizeof(path));
-	StringCchCat(path, MAX_PATH, g_configInfo.videodir);
-	StringCchCat(path, MAX_PATH, _T("\\"));
-	StringCchCat(path, MAX_PATH, findata.cFileName);
-	if(is_valid_bbk_video(findata.cFileName, path))
-	{
-		idx = get_hash_index(findata.cFileName);
-		pVNode = (RECVIDEO*)malloc(sizeof(RECVIDEO));
-		if(NULL == pVNode) 
+		memset(path, 0, sizeof(path));
+		StringCchCat(path, MAX_PATH, g_configInfo.videodir);
+		StringCchCat(path, MAX_PATH, _T("\\"));
+		StringCchCat(path, MAX_PATH, findata.cFileName);
+		if(is_valid_bbk_video(findata.cFileName, path))
 		{
-			return 0;
+			idx = get_hash_index(findata.cFileName);
+			pVNode = (RECVIDEO*)malloc(sizeof(RECVIDEO));
+			if(NULL == pVNode) 
+			{
+				return 0;
+			}
+			memset(pVNode, 0, sizeof(RECVIDEO));
+			g_ptblV[idx] = pVNode;
+			StringCchCat(pVNode->name, VIDEO_FILENAME_MAX_LEN, findata.cFileName);
+			count++;
 		}
-		memset(pVNode, 0, sizeof(RECVIDEO));
-		g_ptblV[idx] = pVNode;
-		StringCchCat(pVNode->name, VIDEO_FILENAME_MAX_LEN, findata.cFileName);
-		count++;
 	}
 
 	while(FindNextFile(hFind, &findata))
 	{
-		if(FILE_ATTRIBUTE_DIRECTORY != findata.dwFileAttributes) continue;
+		if(0 == (FILE_ATTRIBUTE_DIRECTORY & findata.dwFileAttributes)) continue;
+		//if(FILE_ATTRIBUTE_DIRECTORY != findata.dwFileAttributes) continue;
 
 		memset(path, 0, sizeof(path));
 		StringCchCat(path, MAX_PATH, g_configInfo.videodir);

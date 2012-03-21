@@ -28,7 +28,6 @@ HWND CVideoWnd::Create(HWND hwndParent)
 						 NULL, 
 						 NULL, 
 						 NULL);
-
 	return m_hWnd;
 }
 
