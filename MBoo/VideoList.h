@@ -4,6 +4,9 @@
 
 #pragma once
 
+#define IDC_LIST_CMD_OPENFOLDER	0x12
+#define IDC_LIST_CMD_DETAILINFO	0x13
+
 class CVideoWnd;
 
 class CVideoList : public CDialogImpl<CVideoList>
@@ -31,6 +34,8 @@ public:
 		MESSAGE_HANDLER(WM_PROGRESS_SYNC_SHOW, OnProgressShow)
 		MESSAGE_HANDLER(WM_PROGRESS_SYNC_UPDATE, OnProgressUpdate)
 		COMMAND_ID_HANDLER(IDC_LIST_BTN_SYNC, OnBtnSyncVideo)
+		COMMAND_ID_HANDLER(IDC_LIST_CMD_OPENFOLDER, OnOpenVideoFolder)
+		COMMAND_ID_HANDLER(IDC_LIST_CMD_DETAILINFO, OnDetailedInfo)
     END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -40,9 +45,14 @@ public:
 	LRESULT OnProgressShow(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnProgressUpdate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnBtnSyncVideo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnOpenVideoFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnDetailedInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnVideoSelected(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
 private:
 	//void PopulateVideoInfo();
 	BOOL	m_btreeLocked;
+	LRESULT OnDBLClick();
+	LRESULT OnRClick();
+	LRESULT OnShowTips(LPNMTVGETINFOTIP);
 };

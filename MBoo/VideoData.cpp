@@ -370,7 +370,6 @@ TCHAR tmpbuf[VIDEO_TITLE_MAX_LEN + 1] = { 0 };
 				_T('b') == result->result_buf[left+2] &&
 				_T('k') == result->result_buf[left+3] ) // video record
 			{
-				//process_video_record(result->result_buf, left+1, right-1);
 				j = left + 1;
 				L = j;
 				while(j<right && _T(':') != result->result_buf[j]) { j++; }

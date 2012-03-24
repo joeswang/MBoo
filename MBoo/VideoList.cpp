@@ -25,7 +25,7 @@ LRESULT CVideoList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 
 	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
 	::SetWindowLong(treeVideo, GWL_STYLE, 
-		treeVideo.GetStyle() | TVS_HASLINES | TVS_HASBUTTONS | TVS_SHOWSELALWAYS | TVS_LINESATROOT | TVS_DISABLEDRAGDROP);
+		treeVideo.GetStyle() | TVS_HASLINES | TVS_HASBUTTONS | TVS_SHOWSELALWAYS | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | TVS_INFOTIP);
 /*
 	CBitmap bmpLock;
 	CImageList imgList;
@@ -61,21 +61,18 @@ LRESULT CVideoList::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	return TRUE;
 }
 
-LRESULT CVideoList::OnVideoSelected(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/)
+LRESULT CVideoList::OnDBLClick()
 {
 TCHAR path[MAX_PATH] = { 0 };
 WIN32_FIND_DATA findata;
 HANDLE hVideoFile;
 TCHAR msg[MAX_PATH] = {0};
 
-	if(m_btreeLocked) return FALSE;
-	if(NM_DBLCLK != pnmh->code) return FALSE;
-	//MessageBox(_T("选中一个视频！"));
+	if(NULL == m_pFlashObject ) return FALSE;
+
 	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
 	CTreeItem ti =	treeVideo.GetSelectedItem();
 	if(ti.HasChildren()) return TRUE;
-
-	if(NULL == m_pFlashObject ) return FALSE;
 
 	RECVIDEO* p  = (RECVIDEO*)ti.GetData();
 	if(NULL == p) return FALSE;
@@ -112,7 +109,73 @@ TCHAR msg[MAX_PATH] = {0};
 	StringCchCat(msg, MAX_PATH, _T("没有找到视频文件 : "));
 	//StringCchCat(msg, MAX_PATH*2, path);
 	MessageBox(msg);
-	return FALSE;
+	return 0;
+}
+
+LRESULT CVideoList::OnRClick()
+{
+POINT pt;
+BOOL  bSeries = FALSE;
+TCHAR menuTitle[32+1] = {0};
+
+	GetCursorPos(&pt);
+	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
+	treeVideo.ScreenToClient(&pt);
+	CTreeItem ti =	treeVideo.HitTest(pt, NULL);
+	treeVideo.Select(ti,TVGN_CARET);
+	if(ti.HasChildren()) bSeries = TRUE;
+
+	GetCursorPos(&pt);
+	CMenu popMenu;
+	popMenu.CreatePopupMenu();
+	if(!bSeries)
+	{
+		popMenu.AppendMenu(MF_STRING|MF_ENABLED,IDC_LIST_CMD_OPENFOLDER,_T("打开本视频所在文件夹"));
+		StringCchCat(menuTitle, 32, _T("查看本视频的详细信息"));
+	}
+	else
+	{
+		StringCchCat(menuTitle, 32, _T("查看本系列的详细信息"));
+	}
+	popMenu.AppendMenu(MF_STRING|MF_ENABLED,IDC_LIST_CMD_DETAILINFO, menuTitle);
+
+	popMenu.TrackPopupMenu(TPM_LEFTALIGN|TPM_TOPALIGN|TPM_LEFTBUTTON, pt.x, pt.y, m_hWnd);
+
+	return 0;
+}
+
+
+LRESULT CVideoList::OnShowTips(LPNMTVGETINFOTIP lpGetInfoTip)
+{
+	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
+	//treeVideo.Set
+	CTreeItem ti(lpGetInfoTip->hItem, &treeVideo);
+	if(ti.HasChildren())
+	{
+		lpGetInfoTip->pszText = _T("这里是系列视频的介绍资料");
+	}
+	else
+	{
+		lpGetInfoTip->pszText = _T("这里是单个视频的介绍资料");
+	}
+	return 0;
+}
+
+LRESULT CVideoList::OnVideoSelected(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/)
+{
+	if(m_btreeLocked) return FALSE;
+
+	switch(pnmh->code)
+	{
+	case NM_DBLCLK:
+		return OnDBLClick();
+	case NM_RCLICK:
+		return OnRClick();
+	case TVN_GETINFOTIP:
+		return OnShowTips((LPNMTVGETINFOTIP)pnmh);
+	default:
+		return 0;
+	}
 }
 
 
@@ -163,6 +226,34 @@ LRESULT CVideoList::OnBtnSyncVideo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 	m_btreeLocked = TRUE;
 	_beginthread(thread_update_videoinfo, 0, m_hWnd);
+	return 0;
+}
+
+LRESULT CVideoList::OnDetailedInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	MessageBox(_T("GGGGGGGGGGGGGGG"));
+	return 0;
+}
+
+LRESULT CVideoList::OnOpenVideoFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+TCHAR path[MAX_PATH] = { 0 };
+
+	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
+	CTreeItem ti =	treeVideo.GetSelectedItem();
+	if(ti.HasChildren()) return TRUE;
+
+	RECVIDEO* p  = (RECVIDEO*)ti.GetData();
+	if(NULL == p) return FALSE;
+	//MessageBox(p->name);
+	memset(path, 0, sizeof(path));
+	StringCchCat(path, MAX_PATH, g_configInfo.videodir);
+	StringCchCat(path, MAX_PATH, _T("\\"));
+	StringCchCat(path, MAX_PATH, p->name);
+	StringCchCat(path, MAX_PATH, _T("\\"));
+	//StringCchCat(path, MAX_PATH, _T(DEFAULT_VIDEO_FILE));
+
+	::ShellExecute(NULL, _T("explore"), path, NULL, NULL, SW_SHOWDEFAULT);
 	return 0;
 }
 
