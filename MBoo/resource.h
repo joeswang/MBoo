@@ -12,6 +12,7 @@
 #define IDD_DLG_LIST                    130
 #define IDD_DLG_OPTION                  131
 #define IDD_DLG_WIZARD					132
+#define IDD_DLG_UNZIP		            133
 
 #define IDR_BITMAP_LOCK					200
 #define IDR_BITMAP_BKGROUND				201
@@ -35,6 +36,15 @@
 
 #define	IDC_WIZARD_EDIT_DIR				1701
 #define	IDC_WIZARD_BTN_BROWSE			1702
+
+#define IDC_UNZIP_STATIC_CAPTION        1914
+#define IDC_UNZIP_LIST_VIDEOZIP         1915
+#define IDC_UNZIP_STATIC_VIDEPZIP       1916
+#define IDC_UNZIP_STATIC_PERCENT        1917
+#define IDC_UNZIP_PGS_PERCENT           1918
+#define IDC_UNZIP_PGS_VIDEOZIP          1919
+#define IDC_UNZIP_BTN_UNCOMPRESS        1920
+#define IDC_UNZIP_CHK_DELVZIP			1921
 
 #define ID_FILE_OPTION					3000
 #define ID_EDIT_CAPTURE					3010

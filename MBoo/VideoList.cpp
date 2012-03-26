@@ -21,7 +21,7 @@ LRESULT CVideoList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 
 	//::SkinSE_SubclassWindow(GetDlgItem(IDC_LIST_TREE_VIDEO), _T("list.tree.video"));
 	::SkinSE_SubclassWindow(GetDlgItem(IDC_LIST_BTN_SYNC), _T("list.btn.sync"));
-	::SkinSE_SubclassWindow(GetDlgItem(IDC_LIST_PGS_SYNC).m_hWnd, _T("list.pgs.sync"));
+	::SkinSE_SubclassWindow(GetDlgItem(IDC_LIST_PGS_SYNC), _T("list.pgs.sync"));
 
 	CTreeViewCtrlEx treeVideo = GetDlgItem(IDC_LIST_TREE_VIDEO);
 	::SetWindowLong(treeVideo, GWL_STYLE, 
@@ -231,7 +231,7 @@ LRESULT CVideoList::OnBtnSyncVideo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 LRESULT CVideoList::OnDetailedInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	MessageBox(_T("GGGGGGGGGGGGGGG"));
+	MessageBox(_T("这个功能暂没有开发，抱歉 :-)\n会弹出一个对话框，显示本视频/系列的详细信息 :-P"));
 	return 0;
 }
 
@@ -278,7 +278,11 @@ TCHAR msg[VIDEO_TITLE_MAX_LEN * 2];
 		while(NULL != p)
 		{
 			memset(msg, 0, VIDEO_TITLE_MAX_LEN*2);
-			_stprintf_s(msg, VIDEO_TITLE_MAX_LEN*2, _T("[%s]:第%d集 - %s"), p->name, p->idx, p->title);
+			if(0 != p->sid)
+				_stprintf_s(msg, VIDEO_TITLE_MAX_LEN*2, _T("[%s]:第%d集 - %s"), p->name, p->idx, p->title);
+			else
+				_stprintf_s(msg, VIDEO_TITLE_MAX_LEN*2, _T("[%s]: %s"), p->name, p->title);
+
 			ti2 = ti1.AddTail(msg, 0);
 			ti2.SetData((DWORD_PTR)p);
 			p = p->nextVideo;

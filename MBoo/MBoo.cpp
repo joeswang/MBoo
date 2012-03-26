@@ -11,6 +11,7 @@
 #include "MainFrm.h"
 #include "VideoData.h"
 #include "DlgWizard.h"
+#include "DlgUnZip.h"
 
 // the global variables
 HFPC g_hFPC = NULL;
@@ -18,10 +19,12 @@ VIDEOINFO	g_videoInfo;
 CONFIGINFO	g_configInfo;
 RECVIDEO* g_ptblV[VIDEO_HASHTBL_SIZE] = { 0 };
 RECSERIES g_tblS[SERIES_MAX_NUMBERS] = { 0 };
+VIDEOZIP g_tblVZIP[VIDEOZIP_MAX_NUMBERS] = { 0 };
 
 CAppModule _Module;
 
 BOOL GetConfigInfo();
+BOOL CheckVideoZipFile();
 
 BOOL InitInstance()
 {
@@ -112,6 +115,8 @@ int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow)
 {
+int nRet = 0;
+
 	if(FALSE == InitInstance()) return 0;
 	
 	HRESULT hRes = ::CoInitialize(NULL);
@@ -128,7 +133,18 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	hRes = _Module.Init(NULL, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
 
-	int nRet = Run(lpstrCmdLine, nCmdShow);
+	if(CheckVideoZipFile())
+	{
+		CDlgUnZip dlgUnZip;
+		if(IDOK == dlgUnZip.DoModal())
+		{
+			nRet = Run(lpstrCmdLine, nCmdShow);
+		}
+	}
+	else
+	{
+		nRet = Run(lpstrCmdLine, nCmdShow);
+	}
 
 	_Module.Term();
 	::CoUninitialize();
@@ -239,3 +255,80 @@ TCHAR msg[UI_MESSAGE_MAX_LEN] = {0};
 
 	return TRUE;
 }
+
+BOOL CheckVideoZipFile()
+{
+	return FALSE;
+/*
+int i, len, unzip, count=0;
+WIN32_FIND_DATA findata;
+HANDLE hFind;
+TCHAR zipVideo[MAX_PATH] = {0};
+TCHAR  name[VIDEO_FILENAME_MAX_LEN + 4 + 1];  // bbk01234567890.zip
+
+	memset(g_tblVZIP, 0, sizeof(g_tblVZIP));
+	
+	StringCchCat(zipVideo, MAX_PATH, g_configInfo.videodir);
+	StringCchCat(zipVideo, MAX_PATH, _T("\\bbk*.zip"));
+	hFind = FindFirstFile(zipVideo, &findata);
+	if(INVALID_HANDLE_VALUE == hFind) return FALSE;
+
+	i = 0;
+	if(0 == (FILE_ATTRIBUTE_DIRECTORY & findata.dwFileAttributes))
+	{
+		len = _tcslen(findata.cFileName);
+		if(len < VIDEO_FILENAME_MAX_LEN + 4 + 1 && len > 7)
+		{
+			g_tblVZIP[i].valid = TRUE;
+			g_tblVZIP[i].unzip = FALSE;
+			StringCchCat(g_tblVZIP[i].name, VIDEO_FILENAME_MAX_LEN + 4, findata.cFileName);
+			i++;
+		}
+	}
+
+	while(FindNextFile(hFind, &findata))
+	{
+
+		if(0 != (FILE_ATTRIBUTE_DIRECTORY & findata.dwFileAttributes)) continue;
+
+		len = _tcslen(findata.cFileName);
+		if(len < VIDEO_FILENAME_MAX_LEN + 4 + 1 && len > 7)
+		{
+			g_tblVZIP[i].valid = TRUE;
+			g_tblVZIP[i].unzip = FALSE;
+			StringCchCat(g_tblVZIP[i].name, VIDEO_FILENAME_MAX_LEN + 4, findata.cFileName);
+			i++;
+		}
+	}
+
+	count = i;
+	if(0 == count) return FALSE;
+	unzip = 0;
+
+	for(i=0; i<count; i++)
+	{
+		memset(name, 0, VIDEO_FILENAME_MAX_LEN + 4 + 1);
+		StringCchCat(name, VIDEO_FILENAME_MAX_LEN + 4, g_tblVZIP[i].name);
+		len = _tcslen(name);
+		if(len <= 7) continue;
+		name[len-4] = 0x00;  // get rid of the .zip extension
+
+		memset(zipVideo, 0, sizeof(zipVideo));
+		StringCchCat(zipVideo, MAX_PATH, g_configInfo.videodir);
+		StringCchCat(zipVideo, MAX_PATH, _T("\\"));
+		StringCchCat(zipVideo, MAX_PATH, name);
+		hFind = FindFirstFile(zipVideo, &findata);
+		if(INVALID_HANDLE_VALUE == hFind) continue;
+		if(0 != (FILE_ATTRIBUTE_DIRECTORY & findata.dwFileAttributes))
+		{
+			g_tblVZIP[i].unzip = TRUE;
+			unzip++;
+		}
+	}
+	if(unzip == count) return FALSE;
+
+	return TRUE;
+*/
+}
+
+

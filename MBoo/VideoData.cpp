@@ -6,8 +6,8 @@
 
 typedef struct _BBKRESULT
 {
-	LPTSTR result_buf;	
-	UINT len;
+	TCHAR buffer[RESPONESE_BUFFER_MAX_LEN];	
+	int index;
 } BBKRESULT;
 
 static BBKRESULT bbk_result;
@@ -112,7 +112,7 @@ TCHAR sql[SQL_STMT_MAX_LEN] = { 0 };
 	return TRUE;
 }
 
-BOOL is_valid_bbk_video(LPCTSTR dirname, LPCTSTR filepath)
+BOOL is_valid_bbk_video(LPCTSTR videoname, WORD* pwFrameRate)
 {
 int len, i;
 int ret;
@@ -120,48 +120,57 @@ SWF swf;
 WIN32_FIND_DATA findata;
 HANDLE hVideoFile;
 TCHAR vf[MAX_PATH] = { 0 };
+TCHAR path[MAX_PATH] = { 0 };
 
-	if(NULL == dirname) return FALSE;
-	if(NULL == filepath) return FALSE;
+	if(NULL == videoname) return FALSE;
+
 	// check the video file name first :　bbk1234567890
-	len = _tcslen(dirname);
-	if(len > VIDEO_FILENAME_MAX_LEN) return FALSE;
-	if(_T('b') != dirname[0]) return FALSE;
-	if(_T('b') != dirname[1]) return FALSE;
-	if(_T('k') != dirname[2]) return FALSE;
-
+	len = _tcslen(videoname);
+	if(len < 3 || len > VIDEO_FILENAME_MAX_LEN) return FALSE;
+	if(_T('b') != videoname[0]) return FALSE;
+	if(_T('b') != videoname[1]) return FALSE;
+	if(_T('k') != videoname[2]) return FALSE;
 	for(i=3; i<len; i++)
 	{
-		if(_T('0') > dirname[i] || _T('9') < dirname[i]) return FALSE;
+		if(_T('0') > videoname[i] || _T('9') < videoname[i]) return FALSE;
 	}
 
-	//vf[0] = 0;
+	memset(path, 0, sizeof(path));
+	StringCchCat(path, MAX_PATH, g_configInfo.videodir);
+	StringCchCat(path, MAX_PATH, _T("\\"));
+	StringCchCat(path, MAX_PATH, videoname);
+	StringCchCat(path, MAX_PATH, _T("\\"));
+
 	memset(vf, 0, sizeof(vf));
-	StringCchCat(vf, MAX_PATH, filepath);
-	StringCchCat(vf, MAX_PATH, _T("\\"));
+	StringCchCat(vf, MAX_PATH, path);
 	StringCchCat(vf, MAX_PATH, _T(DEFAULT_VIDEO_FILE));
 	hVideoFile = FindFirstFile(vf, &findata);
 	if(INVALID_HANDLE_VALUE == hVideoFile)
 	{
 		memset(vf, 0, MAX_PATH * sizeof(TCHAR));
-		StringCchCat(vf, MAX_PATH, filepath);
-		StringCchCat(vf, MAX_PATH, _T("\\"));
-		StringCchCat(vf, MAX_PATH, dirname);
+		StringCchCat(vf, MAX_PATH, path);
+		StringCchCat(vf, MAX_PATH, videoname);
 		StringCchCat(vf, MAX_PATH, _T(".swf"));
 		hVideoFile = FindFirstFile(vf, &findata);
 		if(INVALID_HANDLE_VALUE == hVideoFile)	return FALSE;
 	}
 
-	//if(FILE_ATTRIBUTE_DIRECTORY != videodata.dwFileAttributes) return FALSE;
+	if(0 != (FILE_ATTRIBUTE_DIRECTORY & findata.dwFileAttributes)) return FALSE;
+
 	memset(&swf, 0, sizeof(SWF));
 	ret = swf_ReadSWFInfo(vf, &swf);
 	if(ret < 0) return FALSE;
 	if(swf.movieSize.xmin != 0 || swf.movieSize.ymin != 0 
 			|| swf.movieSize.xmax != 20 * VIDEO_MIN_WIDTH || swf.movieSize.ymax != 20 * VIDEO_MIN_HEIGHT)
 		return FALSE;
+
+	*pwFrameRate = swf.frameRate;  // record the frameRate
 	return TRUE;
 }
 
+/*----------------------------------------------------------------------------------------------------*
+ *  Scan the video local directory specified by g_configInfo.videodir to find the valid boobooke videos
+ *----------------------------------------------------------------------------------------------------*/
 int scan_video_files()
 {
 WIN32_FIND_DATA findata;
@@ -169,6 +178,7 @@ HANDLE hFind;
 RECVIDEO *p, *pVNode = NULL;
 int count = 0;
 UINT idx;
+WORD wFrameRate;
 TCHAR path[MAX_PATH] = {0};
 
 	// Scan the local video directory to update the video infomation
@@ -186,11 +196,8 @@ TCHAR path[MAX_PATH] = {0};
 
 	if(0 != (FILE_ATTRIBUTE_DIRECTORY & findata.dwFileAttributes))
 	{
-		memset(path, 0, sizeof(path));
-		StringCchCat(path, MAX_PATH, g_configInfo.videodir);
-		StringCchCat(path, MAX_PATH, _T("\\"));
-		StringCchCat(path, MAX_PATH, findata.cFileName);
-		if(is_valid_bbk_video(findata.cFileName, path))
+		wFrameRate = 0;
+		if(is_valid_bbk_video(findata.cFileName, &wFrameRate))
 		{
 			idx = get_hash_index(findata.cFileName);
 			pVNode = (RECVIDEO*)malloc(sizeof(RECVIDEO));
@@ -200,6 +207,7 @@ TCHAR path[MAX_PATH] = {0};
 			}
 			memset(pVNode, 0, sizeof(RECVIDEO));
 			g_ptblV[idx] = pVNode;
+			pVNode->frameRate = wFrameRate;
 			StringCchCat(pVNode->name, VIDEO_FILENAME_MAX_LEN, findata.cFileName);
 			count++;
 		}
@@ -208,17 +216,14 @@ TCHAR path[MAX_PATH] = {0};
 	while(FindNextFile(hFind, &findata))
 	{
 		if(0 == (FILE_ATTRIBUTE_DIRECTORY & findata.dwFileAttributes)) continue;
-		//if(FILE_ATTRIBUTE_DIRECTORY != findata.dwFileAttributes) continue;
 
-		memset(path, 0, sizeof(path));
-		StringCchCat(path, MAX_PATH, g_configInfo.videodir);
-		StringCchCat(path, MAX_PATH, _T("\\"));
-		StringCchCat(path, MAX_PATH, findata.cFileName);
-		if(!is_valid_bbk_video(findata.cFileName, path)) continue;
+		wFrameRate = 0;
+		if(!is_valid_bbk_video(findata.cFileName, &wFrameRate)) continue;
 
 		pVNode = (RECVIDEO*)malloc(sizeof(RECVIDEO));
 		memset(pVNode, 0, sizeof(RECVIDEO));
 		if(NULL == pVNode) continue;
+		pVNode->frameRate = wFrameRate;
 		StringCchCat(pVNode->name, VIDEO_FILENAME_MAX_LEN, findata.cFileName);
 		idx = get_hash_index(findata.cFileName);
 		if(NULL == g_ptblV[idx]) g_ptblV[idx] = pVNode;
@@ -290,7 +295,7 @@ BOOL update_video_database(BBKRESULT* result)
 int i, left, right, len;
 int j, k, L, R;
 int state = 0;   // 0 - not in a record, 1 - in a record
-int idx = 0;
+int idx;
 RECVIDEO* p = NULL;
 sqlite3 *db;
 sqlite3_stmt *stmt = NULL;
@@ -300,133 +305,127 @@ TCHAR tmpbuf[VIDEO_TITLE_MAX_LEN + 1] = { 0 };
 
 	if(NULL == result) return FALSE;
 	
-	memset(g_tblS, 0, sizeof(RECSERIES) * SERIES_MAX_NUMBERS);
+	memset(g_tblS, 0, sizeof(g_tblS));
 
-	i=0; len = result->len;
+	idx = -1;
+	i=0; len = result->index;
 	while(i < len)
 	{
 		left = right = 0;
 		if(0 == state)
 		{
-			while(i < len && _T('|') != result->result_buf[i]) { i++; }
+			while(i < len && _T('|') != result->buffer[i]) { i++; }
 			if(i >= len) break; 
 			left = i; state = 1;
 			i++;
 		}
 		if(1 == state)
 		{
-			while(i < len && _T('|') != result->result_buf[i]) { i++; }
+			while(i < len && _T('|') != result->buffer[i]) { i++; }
 			if(i >= len) break; 
 			right = i; state = 0;
-			//i++;
 		}
+
 		if(left >0 && right>0 && (right - left > 3)) // seem to get a good record
 		{
-			if(_T('S') == result->result_buf[left+1])  // series record
+			if(_T('S') == result->buffer[left+1])  // series record
 			{
-				//process_series_record(result->result_buf, left+1, right-1);
+				idx++;
+				if(idx >= SERIES_MAX_NUMBERS) continue;
 				j = left + 2;
 				L = j;
-				while(j<right && _T(':') != result->result_buf[j]) { j++; }
+				while(j<right && _T(':') != result->buffer[j]) { j++; }
 				if(j==right) continue;
 				R = j;
 				if(R - L > VIDEO_TITLE_MAX_LEN) continue; // too long
 				memset(tmpbuf, 0, VIDEO_TITLE_MAX_LEN + 1);
-				for(k=L; k<R; k++) tmpbuf[k-L] = result->result_buf[k];
+				for(k=L; k<R; k++) tmpbuf[k-L] = result->buffer[k];
 				g_tblS[idx].valid = TRUE;
 				g_tblS[idx].sid = _tstoi(tmpbuf);
 				
 				j = R + 1; 
 				L = j;
-				while(j<right && _T(':') != result->result_buf[j]) { j++; }
+				while(j<right && _T(':') != result->buffer[j]) { j++; }
 				if(j==right) continue;
 				R = j;
 				if(R - L > VIDEO_TITLE_MAX_LEN) continue; // too long
 				memset(tmpbuf, 0, VIDEO_TITLE_MAX_LEN + 1);
-				for(k=L; k<R; k++) tmpbuf[k-L] = result->result_buf[k];
+				for(k=L; k<R; k++) tmpbuf[k-L] = result->buffer[k];
 				g_tblS[idx].total = _tstoi(tmpbuf);
 
 				j = R + 1; 
 				L = j;
-				while(j<right && _T(':') != result->result_buf[j]) { j++; }
+				while(j<right && _T(':') != result->buffer[j]) { j++; }
 				if(j==right) continue;
 				R = j;
 				if(R - L > VIDEO_TITLE_MAX_LEN) continue; // too long
 				//memset(tmpbuf, 0, VIDEO_TITLE_MAX_LEN + 1);
-				for(k=L; k<R; k++) g_tblS[idx].title[k-L] = result->result_buf[k];
+				for(k=L; k<R; k++) g_tblS[idx].title[k-L] = result->buffer[k];
 
 				j = R + 1; 
 				L = j;
-				while(j<right && _T(':') != result->result_buf[j]) { j++; }
+				while(j<right && _T(':') != result->buffer[j]) { j++; }
 				if(j==right) continue;
 				R = j;
 				if(R - L > TUTOR_NAME_MAX_LEN) continue; // too long
 				//memset(tmpbuf, 0, VIDEO_TITLE_MAX_LEN + 1);
-				for(k=L; k<R; k++) g_tblS[idx].tutor[k-L] = result->result_buf[k];
-
-				idx++;
+				for(k=L; k<R; k++) g_tblS[idx].tutor[k-L] = result->buffer[k];
 			}
-			if( _T('b') == result->result_buf[left+1] &&
-				_T('b') == result->result_buf[left+2] &&
-				_T('k') == result->result_buf[left+3] ) // video record
+
+			if( _T('b') == result->buffer[left+1] &&
+				_T('b') == result->buffer[left+2] &&
+				_T('k') == result->buffer[left+3] ) // video record
 			{
 				j = left + 1;
 				L = j;
-				while(j<right && _T(':') != result->result_buf[j]) { j++; }
+				while(j<right && _T(':') != result->buffer[j]) { j++; }
 				if(j==right) continue;
 				R = j;
 				if(R - L > VIDEO_FILENAME_MAX_LEN) continue; // too long
 				memset(tmpbuf, 0, VIDEO_TITLE_MAX_LEN + 1);
-				for(k=L; k<R; k++) tmpbuf[k-L] = result->result_buf[k];  // vid
+				for(k=L; k<R; k++) tmpbuf[k-L] = result->buffer[k];  // vid
 				p = lookup_video(tmpbuf);
 				if(NULL == p) continue;  // cannot find the video node in the hash table
 				
 				j = R + 1; 
 				L = j;
-				while(j<right && _T(':') != result->result_buf[j]) { j++; }
+				while(j<right && _T(':') != result->buffer[j]) { j++; }
 				if(j==right) continue;
 				R = j;
 				if(R - L > VIDEO_TITLE_MAX_LEN) continue; // too long
 				memset(tmpbuf, 0, VIDEO_TITLE_MAX_LEN + 1);
-				for(k=L; k<R; k++) tmpbuf[k-L] = result->result_buf[k]; // sid
+				for(k=L; k<R; k++) tmpbuf[k-L] = result->buffer[k]; // sid
 				p->sid = _tstoi(tmpbuf);
 
 				j = R + 1; 
 				L = j;
-				while(j<right && _T(':') != result->result_buf[j]) { j++; }
+				while(j<right && _T(':') != result->buffer[j]) { j++; }
 				if(j==right) continue;
 				R = j;
 				if(R - L > VIDEO_TITLE_MAX_LEN) continue; // too long
 				memset(tmpbuf, 0, VIDEO_TITLE_MAX_LEN + 1);
-				for(k=L; k<R; k++) tmpbuf[k-L] = result->result_buf[k]; // idx
+				for(k=L; k<R; k++) tmpbuf[k-L] = result->buffer[k]; // idx
 				p->idx = _tstoi(tmpbuf);
 
 				j = R + 1; 
 				L = j;
-				while(j<right && _T(':') != result->result_buf[j]) { j++; }
+				while(j<right && _T(':') != result->buffer[j]) { j++; }
 				if(j==right) continue;
 				R = j;
 				if(R - L > VIDEO_TITLE_MAX_LEN) continue; // too long
 				//memset(tmpbuf, 0, VIDEO_TITLE_MAX_LEN + 1);
-				for(k=L; k<R; k++) p->title[k-L] = result->result_buf[k];
+				for(k=L; k<R; k++) p->title[k-L] = result->buffer[k];
 
 				j = R + 1; 
 				L = j;
-				while(j<right && _T(':') != result->result_buf[j]) { j++; }
+				while(j<right && _T(':') != result->buffer[j]) { j++; }
 				//if(j==right) continue;
 				R = j;
 				if(R - L > TUTOR_NAME_MAX_LEN) continue; // too long
 				//memset(tmpbuf, 0, VIDEO_TITLE_MAX_LEN + 1);
-				for(k=L; k<R; k++) p->tutor[k-L] = result->result_buf[k];
+				for(k=L; k<R; k++) p->tutor[k-L] = result->buffer[k];
 			}
 		}
-	}
-
-	if(NULL != result->result_buf)
-	{
-		free(result->result_buf);
-		result->result_buf = NULL;
-		result->len = 0;
 	}
 
 	rc = sqlite3_open16(g_configInfo.dbfile, &db);
@@ -444,7 +443,7 @@ TCHAR tmpbuf[VIDEO_TITLE_MAX_LEN + 1] = { 0 };
 		sqlite3_finalize(stmt);
 	}
 
-	for(i=0; i<idx; i++)
+	for(i=0; i<=idx; i++)
 	{
 		int count;
 		_stprintf_s(sql, SQL_STMT_MAX_LEN,  _T("SELECT count(1) FROM series WHERE sid=%d"), g_tblS[i].sid); 
@@ -488,13 +487,22 @@ TCHAR tmpbuf[VIDEO_TITLE_MAX_LEN + 1] = { 0 };
 
 static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *stream)
 {
-	//CA2T szResponse((char*)ptr, CP_UTF8);
-	bbk_result.result_buf = (LPTSTR)malloc(sizeof(TCHAR)* size * nmemb);
-	bbk_result.len = size * nmemb;
-	memset(bbk_result.result_buf, 0, bbk_result.len);
-	MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)ptr, size * nmemb, bbk_result.result_buf, bbk_result.len);
-	//StringCchCat(response_buf, RESPONSE_BUFFER_MAX_LEN, szResponse);
-	return 0;
+	int len;
+	
+	len = size * nmemb;
+	if(bbk_result.index + len < RESPONESE_BUFFER_MAX_LEN)
+	{
+		MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)ptr, len, bbk_result.buffer + bbk_result.index, len);
+		bbk_result.index += len;
+		return len;
+	}
+	else
+	{
+		len = RESPONESE_BUFFER_MAX_LEN - bbk_result.index;
+		MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)ptr, len, bbk_result.buffer + bbk_result.index, len);
+		bbk_result.index += len;
+		return 0;
+	}
 }
 
 BOOL send_request_to_bbk(LPCSTR rqst_buf)
@@ -569,8 +577,7 @@ int i, count;
 	// test
 	//memset(request_buf, 0, sizeof(request_buf));
 	//strcat_s(request_buf, REQUEST_BUFFER_MAX_LEN, "q=BBKBEGIN|bbk1109|bbk1110|BBKEND");
-	bbk_result.len = 0;
-	bbk_result.result_buf = NULL;
+	memset(&bbk_result, 0, sizeof(BBKRESULT));
 
 	send_request_to_bbk(request_buf);
 
@@ -613,9 +620,15 @@ TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 	hWndUI = (HWND)data;
 	if(NULL == hWndUI) return;
 
+	memset(g_tblS, 0, sizeof(RECSERIES) * SERIES_MAX_NUMBERS);
+
 	count = scan_video_files();
 
-	if(0 == count) return;  // no video found
+	if(0 == count)
+	{
+		PostMessage(hWndUI, WM_UPDATE_VIDEO_TREE, 0, 0);
+		return;  // no video found
+	}
 
 	memset(path, 0, sizeof(path));
 	StringCchCat(path, MAX_PATH, g_configInfo.basedir);
@@ -638,7 +651,6 @@ TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 		return;
 	}
 	
-	memset(g_tblS, 0, sizeof(RECSERIES) * SERIES_MAX_NUMBERS);
 	int i = -1;
 	while(TRUE)
 	{
@@ -656,9 +668,17 @@ TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 		StringCchCat(g_tblS[i].tutor, TUTOR_NAME_MAX_LEN, pcol0);
 
 		pcol1 = (LPCTSTR)sqlite3_column_text16(stmt0,3); // title
-		_stprintf_s(g_tblS[i].title, VIDEO_TITLE_MAX_LEN, _T("[系列%d/共%d集]: %s - %s"), g_tblS[i].sid, g_tblS[i].total, pcol0, pcol1);
+		if(0 != g_tblS[i].sid)
+		{
+			_stprintf_s(g_tblS[i].title, VIDEO_TITLE_MAX_LEN, _T("[系列%d/共%d集]: %s - %s"), g_tblS[i].sid, g_tblS[i].total, pcol0, pcol1);
+			_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT vid, idx, title FROM video WHERE sid=%d ORDER BY idx"), g_tblS[i].sid);
+		}
+		else
+		{
+			_stprintf_s(g_tblS[i].title, VIDEO_TITLE_MAX_LEN, _T("[系列%d]: %s - %s"), g_tblS[i].sid, pcol0, pcol1);
+			_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT vid, idx, title FROM video WHERE sid=%d ORDER BY vid"), g_tblS[i].sid);
+		}
 
-		_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT vid, idx, title FROM video WHERE sid=%d ORDER BY idx"), g_tblS[i].sid);
 		if(SQLITE_OK != sqlite3_prepare16_v2(db, sql, -1, &stmt1,NULL))
 		{
 			sqlite3_finalize(stmt1);
@@ -684,6 +704,7 @@ TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 				{
 					p->db = TRUE;
 					p->idx = sqlite3_column_int(stmt1, 1);  // idx;
+					p->sid = g_tblS[i].sid;
 					pcol1 = (LPCTSTR)sqlite3_column_text16(stmt1,2);	  // title
 					//CA2T szT(pcol, CP_ACP);
 					StringCchCat(p->title, VIDEO_TITLE_MAX_LEN, pcol1);
@@ -713,3 +734,21 @@ TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 	::PostMessage(hWndUI, WM_UPDATE_VIDEO_TREE, 0, 0);
 }
 
+void thread_unzip_videofile(void* data)
+{
+HWND hWndUI;
+int i, j;
+	hWndUI = (HWND)data;
+	if(NULL == hWndUI) return;
+
+	for(i=0; i<10; i++)
+	{
+		for(j=0; j<10; j++)
+		{
+			Sleep(100);
+			PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, i*10, j*10);
+		}
+	}
+
+	PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, 100, 100);
+}

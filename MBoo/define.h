@@ -21,6 +21,7 @@
 #define PARAM_UPDATE_MODE	2
 
 #define REQUEST_BUFFER_MAX_LEN	102400
+#define RESPONESE_BUFFER_MAX_LEN	1024000
 
 #define DEFAULT_QUERY_URL	"http://www.boobooke.com/qv.php"
 #define DEFAULT_VIDEO_DIR   "videos"
@@ -34,6 +35,7 @@
 #define WM_PROGRESS_SYNC_SHOW	(WM_USER + 101)
 #define WM_PROGRESS_SYNC_UPDATE	(WM_USER + 102)
 #define WM_CHANGE_WINDOW_TITLE	(WM_USER + 103)
+#define	WM_PROGRESS_UNZIP_SHOW	(WM_USER + 104)
 
 #define	MBOO_OK				0
 #define MBOO_SCREEN_ERR		1
@@ -46,6 +48,15 @@
 #define	TUTOR_NAME_MAX_LEN		32
 #define VIDEO_HASHTBL_SIZE		1009
 #define SERIES_MAX_NUMBERS		1000
+#define VIDEOZIP_MAX_NUMBERS	1000
+
+typedef struct _VIDEOZIP VIDEOZIP;
+struct _VIDEOZIP
+{
+	UINT	valid;
+	UINT	unzip;
+	TCHAR	name[VIDEO_FILENAME_MAX_LEN + 4 + 1];  // bbk01234567890.zip
+};
 
 typedef struct _RECVIDEO RECVIDEO;
 struct _RECVIDEO
@@ -53,7 +64,8 @@ struct _RECVIDEO
 	RECVIDEO* next;		// hash next
 	RECVIDEO* nextVideo;
 	BYTE	db;			// if this video is in the database ,then db=1;
-	//BYTE	size;		// 800 X 600,  or 1024 X 768?
+	WORD	frameRate;
+	WORD	frameCount;
 	UINT	sid;
 	UINT	idx;
 	TCHAR	name[VIDEO_FILENAME_MAX_LEN + 1];
@@ -74,6 +86,7 @@ struct _RECSERIES
 
 extern RECVIDEO* g_ptblV[VIDEO_HASHTBL_SIZE];
 extern RECSERIES g_tblS[SERIES_MAX_NUMBERS];
+extern VIDEOZIP g_tblVZIP[VIDEOZIP_MAX_NUMBERS];
 
 #define URL_MAX_LEN			256
 

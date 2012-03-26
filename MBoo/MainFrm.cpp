@@ -73,6 +73,14 @@ LRESULT CMainFrame::OnGetMinMaxInfo(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 	return 0;
 }
 
+LRESULT CMainFrame::OnActivate(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+{
+	if(WA_ACTIVE == LOWORD(wParam) || WA_CLICKACTIVE == LOWORD(wParam))
+	{
+		MessageBox(_T("Good"));
+	}
+	return 0;
+}
 
 LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {

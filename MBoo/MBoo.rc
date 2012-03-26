@@ -73,12 +73,28 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "下一步",IDOK,205,103,50,14
     PUSHBUTTON      "取   消",IDCANCEL,259,103,50,14
-    LTEXT           "欢迎使用麦宝播放器 - 专门为播布客量身定制的教育培训视频播放器\n\n\t麦宝的使用方法很简单，你只要指定本地一个目录，把播布客的视频都解压缩到这个目录下，麦宝就会自动管理你下载的视频。假设你指定目录为D:\\videos，那么这个目录下的视频目录请保持类似D:\\videos\\bbk1109\\, D:\\videos\\bbk2018\\, D:\\videos\\bbk5550\\等形式。",IDC_STATIC,7,7,302,54
+    LTEXT           "欢迎使用麦宝/MBoo - 播布客(www.boobooke.com)专业级的教育培训视频播放器\n\n\t麦宝的使用方法很简单，你只要指定本地一个目录，把从播布客网站上下载的视频zip压缩包拷贝到这个目录下，无须解压，麦宝就会自动管理这些视频。假设你指定目录为D:\\videos，那么这个目录下的视频请保持类似D:\\videos\\bbk1109.zip, D:\\videos\\bbk2018.zip, D:\\videos\\bbk5550.zip等形式。",IDC_STATIC,7,7,302,54
     LTEXT           "本地视频存放的目录 : ",IDC_STATIC,8,78,80,12
     EDITTEXT        IDC_WIZARD_EDIT_DIR,88,76,203,14,ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "...",IDC_WIZARD_BTN_BROWSE,292,75,18,15
 END
 
+IDD_DLG_UNZIP DIALOGEX 0, 0, 401, 270
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "解压缩视频压缩包"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "下一步",IDOK,288,249,50,14
+    PUSHBUTTON      "取消",IDCANCEL,344,249,50,14
+    LTEXT           "在视频目录中存在如下尚未解压缩的视频压缩包，你是否想现在解压缩？",IDC_UNZIP_STATIC_CAPTION,3,15,374,10
+    CONTROL         "",IDC_UNZIP_LIST_VIDEOZIP,"SysListView32",LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,5,30,394,114
+    PUSHBUTTON		"解压缩",IDC_UNZIP_BTN_UNCOMPRESS,344,150,50,14
+    LTEXT           "正在解压缩...",IDC_UNZIP_STATIC_VIDEPZIP,8,166,378,16
+    LTEXT           "已经解压缩...",IDC_UNZIP_STATIC_PERCENT,8,200,378,16
+    CONTROL         "",IDC_UNZIP_PGS_PERCENT,"msctls_progress32",WS_BORDER,7,179,380,8
+    CONTROL         "",IDC_UNZIP_PGS_VIDEOZIP,"msctls_progress32",WS_BORDER,7,216,380,8
+    CONTROL         "解压缩后删除视频的zip压缩包",IDC_UNZIP_CHK_DELVZIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,150,126,11
+END
 
 IDD_ABOUTBOX DIALOGEX 0,0,187,102
 CAPTION "About"
@@ -136,7 +152,7 @@ END
 
 STRINGTABLE DISCARDABLE
 BEGIN
-  IDR_MAINFRAME "麦宝播放器 - 做最好的学习软件！"
+  IDR_MAINFRAME "麦宝/MBoo 播放器"
 END
 
 STRINGTABLE DISCARDABLE

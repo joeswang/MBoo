@@ -86,9 +86,10 @@ LRESULT CDlgOption::OnBtnBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	StringCchCat(szDefaultDir, MAX_PATH, g_configInfo.basedir);
 
 	ZeroMemory(&bf,sizeof(BROWSEINFO));  
+	bf.hwndOwner = m_hWnd;
     bf.lParam=(LPARAM)szDefaultDir;  
     bf.lpfn=NULL;  
-    bf.lpszTitle=_T("请选择视频存放的文件夹");  
+    bf.lpszTitle=_T("请选择播布客视频存放的文件夹");  
     bf.ulFlags=BIF_STATUSTEXT| BIF_USENEWUI | BIF_RETURNONLYFSDIRS;  
   
     LPITEMIDLIST lpitem=SHBrowseForFolder(&bf);  

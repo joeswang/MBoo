@@ -196,6 +196,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DlgUnZip.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\DlgWizard.cpp"
 				>
 			</File>
@@ -314,6 +318,10 @@
 			</File>
 			<File
 				RelativePath=".\DlgOption.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DlgUnZip.h"
 				>
 			</File>
 			<File

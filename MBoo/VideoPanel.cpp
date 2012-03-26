@@ -45,11 +45,32 @@ LRESULT CVideoPanel::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_SLD_AUDIO), _T("panel.sld.audio"));
 	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_CHK_AUDIO), _T("panel.chk.audio"));
 	::SkinSE_SubclassWindow(GetDlgItem(IDC_PANEL_STC_TIMEFRAME), _T("panel.stc.timeframe"));
-
+/*
+	::RegisterHotKey(m_hWnd, 1, 0, VK_SPACE);
+	::RegisterHotKey(m_hWnd, 2, 0, VK_RIGHT);
+	::RegisterHotKey(m_hWnd, 3, 0, VK_LEFT);
+	::RegisterHotKey(m_hWnd, 4, MOD_CONTROL, VK_RIGHT);
+	::RegisterHotKey(m_hWnd, 5, MOD_CONTROL, VK_LEFT);
+*/
 	SetTimer(PANEL_TIMER_ID, 1000);
 
 	return TRUE;
 }
+
+LRESULT CVideoPanel::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+{
+/*
+	::UnregisterHotKey (m_hWnd, 1);
+	::UnregisterHotKey (m_hWnd, 2);
+	::UnregisterHotKey (m_hWnd, 3);
+	::UnregisterHotKey (m_hWnd, 4);
+	::UnregisterHotKey (m_hWnd, 5);
+*/
+	KillTimer(PANEL_TIMER_ID);
+	bHandled = FALSE;
+	return 1;
+}
+
 
 LRESULT CVideoPanel::OnLBtnDown(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
@@ -171,6 +192,42 @@ LRESULT CVideoPanel::OnTimeFrameMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 {
 	//MessageBox(_T("Ohooo"));
 	return 0;
+}
+
+LRESULT CVideoPanel::OnHotKey(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
+{
+UINT result;
+	if(NULL == m_pFlashObject) return FALSE;
+	if(!m_pFlashObject->HavingMovie()) return FALSE;
+	result = m_pFlashObject->IsPlaying();
+	if(2 == result) return FALSE;
+
+	CButton btnStart		= GetDlgItem(IDC_PANEL_BTN_STARTPAUSE);
+
+	switch (HIWORD(lParam))
+	{
+	case VK_SPACE:
+		if(1 == result)
+		{
+			::SkinSE_SubclassWindow(btnStart, _T("panel.btn.play"));
+			m_pFlashObject->Pause();
+		}
+		else
+		{
+			::SkinSE_SubclassWindow(btnStart, _T("panel.btn.pause"));
+			m_pFlashObject->Resume();
+		}
+		break;
+	case VK_RIGHT:
+		break;
+	case VK_LEFT:
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+
 }
 
 LRESULT CVideoPanel::OnHScroll(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
