@@ -24,7 +24,15 @@ extern CAppModule _Module;
 #include <atldlgs.h>
 
 #include <Strsafe.h>
+#include <direct.h>
 #include <io.h>
+
+// for zlib
+#include "../deps/zlib/include/unzip.h"
+#define USEWIN32IOAPI
+#include "../deps/zlib/include/iowin32.h"
+#pragma comment(lib, "../deps/zlib/lib/zlibwapi.lib")
+
 
 // for libcurl 
 #include "../deps/libcurl/include/curl/curl.h"

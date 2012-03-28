@@ -258,8 +258,6 @@ TCHAR msg[UI_MESSAGE_MAX_LEN] = {0};
 
 BOOL CheckVideoZipFile()
 {
-	return FALSE;
-/*
 int i, len, unzip, count=0;
 WIN32_FIND_DATA findata;
 HANDLE hFind;
@@ -288,7 +286,6 @@ TCHAR  name[VIDEO_FILENAME_MAX_LEN + 4 + 1];  // bbk01234567890.zip
 
 	while(FindNextFile(hFind, &findata))
 	{
-
 		if(0 != (FILE_ATTRIBUTE_DIRECTORY & findata.dwFileAttributes)) continue;
 
 		len = _tcslen(findata.cFileName);
@@ -298,6 +295,7 @@ TCHAR  name[VIDEO_FILENAME_MAX_LEN + 4 + 1];  // bbk01234567890.zip
 			g_tblVZIP[i].unzip = FALSE;
 			StringCchCat(g_tblVZIP[i].name, VIDEO_FILENAME_MAX_LEN + 4, findata.cFileName);
 			i++;
+			if(VIDEOZIP_MAX_NUMBERS <= i) break;
 		}
 	}
 
@@ -328,7 +326,7 @@ TCHAR  name[VIDEO_FILENAME_MAX_LEN + 4 + 1];  // bbk01234567890.zip
 	if(unzip == count) return FALSE;
 
 	return TRUE;
-*/
+
 }
 
 

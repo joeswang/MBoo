@@ -734,21 +734,113 @@ TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 	::PostMessage(hWndUI, WM_UPDATE_VIDEO_TREE, 0, 0);
 }
 
+
+#ifdef UNICODE
+#define fill_win32_filefunc64U  fill_win32_filefunc64W
+#else
+#define fill_win32_filefunc64U  fill_win32_filefunc64A
+#endif
+
+static BOOL bbk_unzip(HWND hWndUI, int current, int total, LPCTSTR zipfile)
+{
+WORD total_percent, current_percent;
+zlib_filefunc64_def ffunc;
+unzFile uf=NULL;
+unz_global_info64 gi;
+unz_file_info64 file_info;
+uLong i;
+int err;
+char filename_inzip[256];
+char *p, *filename_withoutpath;
+//void *buf;
+
+	total_percent = (WORD)((current * 100)/total);
+	SetCurrentDirectory(g_configInfo.videodir);
+
+	fill_win32_filefunc64U(&ffunc);
+	uf = unzOpen2_64(zipfile, &ffunc);
+	if(NULL == uf) 
+	{
+		return FALSE;
+	}
+	err = unzGetGlobalInfo64(uf, &gi);
+	if(UNZ_OK != err)
+	{
+		unzClose(uf);
+		return FALSE;
+	}
+
+	for(i=0; i<gi.number_entry; i++)
+	{
+		current_percent = (WORD)((i * 100) / gi.number_entry);
+		PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, NULL, MAKELPARAM(current_percent, total_percent));
+		Sleep(100);
+		err = unzGetCurrentFileInfo64(uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
+		if(UNZ_OK != err)
+		{
+			unzClose(uf);
+			return FALSE;
+		}
+		p = filename_withoutpath = filename_inzip;
+		while ((*p) != '\0')
+		{
+			if (((*p)=='/') || ((*p)=='\\'))
+				filename_withoutpath = p+1;
+			p++;
+		}
+		if ((*filename_withoutpath)=='\0')
+		{
+			//_mkdir(filename_inzip);
+		}
+		if(i+1 < gi.number_entry)
+		{
+			err = unzGoToNextFile(uf);
+			if(UNZ_OK != err)
+			{
+				unzClose(uf);
+				return FALSE;
+			}
+		}
+	}
+	unzClose(uf);
+
+	return TRUE;
+}
+
 void thread_unzip_videofile(void* data)
 {
 HWND hWndUI;
-int i, j;
+int current, total;
+WORD total_percent;
+
 	hWndUI = (HWND)data;
 	if(NULL == hWndUI) return;
 
-	for(i=0; i<10; i++)
+	total = 0;
+	for(int i=0; i<VIDEOZIP_MAX_NUMBERS; i++)
 	{
-		for(j=0; j<10; j++)
+		if(FALSE == g_tblVZIP[i].valid) break;
+		if(TRUE == g_tblVZIP[i].unzip) continue;
+		total++;
+	}
+	if(0 == total) return;
+
+	PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, NULL, MAKELPARAM(0,0)); // show the progress bars
+	current = 0;
+	for(int i=0; i<VIDEOZIP_MAX_NUMBERS; i++)
+	{
+		if(FALSE == g_tblVZIP[i].valid) break;
+		if(TRUE == g_tblVZIP[i].unzip) continue;
+		
+		total_percent = (WORD)(current*100)/total;
+		PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, (WPARAM)(g_tblVZIP[i].name), MAKELPARAM(0, total_percent));
+		Sleep(1000);
+		if(bbk_unzip(hWndUI, current, total,g_tblVZIP[i].name))
 		{
-			Sleep(100);
-			PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, i*10, j*10);
+			current++;
+			g_tblVZIP[i].unzip = TRUE;
 		}
 	}
 
-	PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, 100, 100);
+	PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, NULL, MAKELPARAM(100,100));
 }

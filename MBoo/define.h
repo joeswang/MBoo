@@ -54,7 +54,7 @@ typedef struct _VIDEOZIP VIDEOZIP;
 struct _VIDEOZIP
 {
 	UINT	valid;
-	UINT	unzip;
+	UINT	unzip;		// 0 - cannot find unzip folder, 1 - find the unzip folder, do not need to unzip this zip file
 	TCHAR	name[VIDEO_FILENAME_MAX_LEN + 4 + 1];  // bbk01234567890.zip
 };
 
