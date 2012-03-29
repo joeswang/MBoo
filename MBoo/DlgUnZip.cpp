@@ -23,7 +23,8 @@ LRESULT CDlgUnZip::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	//::SkinSE_SubclassWindow(GetDlgItem(IDC_UNZIP_PGS_VIDEOZIP), _T("unzip.pgs.video"));
 	//::SkinSE_SubclassWindow(GetDlgItem(IDC_UNZIP_PGS_PERCENT), _T("unzip.pgs.total"));
 	CListViewCtrl lvZIPFile = GetDlgItem(IDC_UNZIP_LIST_VIDEOZIP);
-	lvZIPFile.SetExtendedListViewStyle(LVS_EX_CHECKBOXES|LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
+	//lvZIPFile.SetExtendedListViewStyle(LVS_EX_CHECKBOXES|LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
+	lvZIPFile.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT|LVS_EX_GRIDLINES);
 	//lvZIPFile.InsertColumn(0, _T("½âÑ¹Ëõ"), 0, 50);
 	lvZIPFile.InsertColumn(0, _T("ÊÓÆµZIPÑ¹Ëõ°ü"), 0, 550);
 	lvZIPFile.SetViewType(LVS_REPORT);
@@ -33,7 +34,7 @@ LRESULT CDlgUnZip::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		if(FALSE == g_tblVZIP[i].valid) break;
 		if(TRUE == g_tblVZIP[i].unzip) continue;
 		lvZIPFile.InsertItem(item, g_tblVZIP[i].name);
-		lvZIPFile.SetCheckState(item, TRUE);
+		//lvZIPFile.SetCheckState(item, TRUE);
 		item++;
 	}
 

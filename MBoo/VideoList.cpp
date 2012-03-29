@@ -152,11 +152,19 @@ LRESULT CVideoList::OnShowTips(LPNMTVGETINFOTIP lpGetInfoTip)
 	CTreeItem ti(lpGetInfoTip->hItem, &treeVideo);
 	if(ti.HasChildren())
 	{
-		lpGetInfoTip->pszText = _T("这里是系列视频的介绍资料");
+		//lpGetInfoTip->pszText = _T("这里是系列视频的介绍资料");
 	}
 	else
 	{
-		lpGetInfoTip->pszText = _T("这里是单个视频的介绍资料");
+		RECVIDEO* p  = (RECVIDEO*)ti.GetData();
+		if(NULL != p)
+		{
+			int len = _tcslen(p->title);
+			if(len > 0)
+				lpGetInfoTip->pszText = p->title;
+			else
+				lpGetInfoTip->pszText = p->name;
+		}
 	}
 	return 0;
 }

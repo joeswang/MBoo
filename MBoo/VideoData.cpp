@@ -750,12 +750,13 @@ unz_global_info64 gi;
 unz_file_info64 file_info;
 uLong i;
 int err;
+FILE *fout = NULL;
 char filename_inzip[256];
 char *p, *filename_withoutpath;
-//void *buf;
+char buffer[8192] = {0};
 
 	total_percent = (WORD)((current * 100)/total);
-	SetCurrentDirectory(g_configInfo.videodir);
+	//SetCurrentDirectory(g_configInfo.videodir);
 
 	fill_win32_filefunc64U(&ffunc);
 	uf = unzOpen2_64(zipfile, &ffunc);
@@ -774,7 +775,7 @@ char *p, *filename_withoutpath;
 	{
 		current_percent = (WORD)((i * 100) / gi.number_entry);
 		PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, NULL, MAKELPARAM(current_percent, total_percent));
-		Sleep(100);
+		Sleep(10);
 		err = unzGetCurrentFileInfo64(uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
 		if(UNZ_OK != err)
 		{
@@ -790,7 +791,31 @@ char *p, *filename_withoutpath;
 		}
 		if ((*filename_withoutpath)=='\0')
 		{
-			//_mkdir(filename_inzip);
+			_mkdir(filename_inzip);
+		}
+		else
+		{
+			err = unzOpenCurrentFilePassword(uf, NULL);
+			if(UNZ_OK == err)
+			{
+				fout = fopen64(filename_inzip, "wb");
+				if(NULL != fout)
+				{
+					do
+					{
+						err = unzReadCurrentFile(uf, buffer, 8192);
+						if(err < 0) break;
+						if(fwrite(buffer, err, 1, fout) != 1)
+						{
+							err = UNZ_ERRNO;
+							break;
+						}
+					}while (err>0);
+
+					fclose(fout);
+					unzCloseCurrentFile(uf);
+				}
+			}
 		}
 		if(i+1 < gi.number_entry)
 		{
@@ -825,6 +850,7 @@ WORD total_percent;
 	}
 	if(0 == total) return;
 
+	SetCurrentDirectory(g_configInfo.videodir);
 	PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, NULL, MAKELPARAM(0,0)); // show the progress bars
 	current = 0;
 	for(int i=0; i<VIDEOZIP_MAX_NUMBERS; i++)
@@ -834,7 +860,7 @@ WORD total_percent;
 		
 		total_percent = (WORD)(current*100)/total;
 		PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, (WPARAM)(g_tblVZIP[i].name), MAKELPARAM(0, total_percent));
-		Sleep(1000);
+		//Sleep(1000);
 		if(bbk_unzip(hWndUI, current, total,g_tblVZIP[i].name))
 		{
 			current++;
