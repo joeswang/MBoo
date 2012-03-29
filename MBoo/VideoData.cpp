@@ -164,7 +164,7 @@ TCHAR path[MAX_PATH] = { 0 };
 			|| swf.movieSize.xmax != 20 * VIDEO_MIN_WIDTH || swf.movieSize.ymax != 20 * VIDEO_MIN_HEIGHT)
 		return FALSE;
 
-	*pwFrameRate = swf.frameRate;  // record the frameRate
+	if(NULL != pwFrameRate) *pwFrameRate = swf.frameRate;  // record the frameRate
 	return TRUE;
 }
 
@@ -606,7 +606,7 @@ void thread_query_videoinfo(void* data)
 {
 HWND hWndUI;
 int count;
-UINT idx;
+//UINT idx;
 RECVIDEO *p, *current, *pVNode = NULL;
 sqlite3 *db;
 sqlite3_stmt *stmt0 = NULL;
@@ -671,12 +671,12 @@ TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 		if(0 != g_tblS[i].sid)
 		{
 			_stprintf_s(g_tblS[i].title, VIDEO_TITLE_MAX_LEN, _T("[系列%d/共%d集]: %s - %s"), g_tblS[i].sid, g_tblS[i].total, pcol0, pcol1);
-			_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT vid, idx, title FROM video WHERE sid=%d ORDER BY idx"), g_tblS[i].sid);
+			_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT vid,tutor,idx,title FROM video WHERE sid=%d ORDER BY idx"), g_tblS[i].sid);
 		}
 		else
 		{
 			_stprintf_s(g_tblS[i].title, VIDEO_TITLE_MAX_LEN, _T("[系列%d]: %s - %s"), g_tblS[i].sid, pcol0, pcol1);
-			_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT vid, idx, title FROM video WHERE sid=%d ORDER BY vid"), g_tblS[i].sid);
+			_stprintf_s(sql, SQL_STMT_MAX_LEN, _T("SELECT vid,tutor,idx,title FROM video WHERE sid=%d ORDER BY vid"), g_tblS[i].sid);
 		}
 
 		if(SQLITE_OK != sqlite3_prepare16_v2(db, sql, -1, &stmt1,NULL))
@@ -694,25 +694,16 @@ TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 				break;
 			}
 			pcol0 = (LPCTSTR)sqlite3_column_text16(stmt1,0);	  // vid
-			//CA2T szVID(pcol, CP_ACP);
-			// lookup the video hash table to find this video record
-			idx = get_hash_index(pcol0);
-			p = g_ptblV[idx];
-			while(NULL != p)
-			{
-				if(0 == _tcscmp(p->name, pcol0))
-				{
-					p->db = TRUE;
-					p->idx = sqlite3_column_int(stmt1, 1);  // idx;
-					p->sid = g_tblS[i].sid;
-					pcol1 = (LPCTSTR)sqlite3_column_text16(stmt1,2);	  // title
-					//CA2T szT(pcol, CP_ACP);
-					StringCchCat(p->title, VIDEO_TITLE_MAX_LEN, pcol1);
-					break;
-				}
-				p = p->next;
-			}
+
+			p = lookup_video(pcol0);  // lookup the video hash table to find this video record
 			if(NULL == p) continue;  // not found, go to the next record
+			p->db = TRUE;
+			pcol1 = (LPCTSTR)sqlite3_column_text16(stmt1,1);	  // tutor
+			StringCchCat(p->tutor, TUTOR_NAME_MAX_LEN, pcol1);
+			p->idx = sqlite3_column_int(stmt1, 2);  // idx;
+			p->sid = g_tblS[i].sid;
+			pcol1 = (LPCTSTR)sqlite3_column_text16(stmt1,3);	  // title
+			StringCchCat(p->title, VIDEO_TITLE_MAX_LEN, pcol1);
 			if(bFirst)
 			{
 				bFirst = FALSE;
@@ -741,7 +732,9 @@ TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 #define fill_win32_filefunc64U  fill_win32_filefunc64A
 #endif
 
-static BOOL bbk_unzip(HWND hWndUI, int current, int total, LPCTSTR zipfile)
+#define WRITEBUFFERSIZE	8192
+
+static BOOL unzip_video_file(HWND hWndUI, int current, int total, LPCTSTR zipfile)
 {
 WORD total_percent, current_percent;
 zlib_filefunc64_def ffunc;
@@ -749,23 +742,23 @@ unzFile uf=NULL;
 unz_global_info64 gi;
 unz_file_info64 file_info;
 uLong i;
-int err;
+int ret;
 FILE *fout = NULL;
-char filename_inzip[256];
+TCHAR unicode_path[MAX_PATH] = {0};
+char filename_inzip[MAX_PATH];
 char *p, *filename_withoutpath;
-char buffer[8192] = {0};
+char buffer[WRITEBUFFERSIZE] = {0};
 
 	total_percent = (WORD)((current * 100)/total);
-	//SetCurrentDirectory(g_configInfo.videodir);
 
 	fill_win32_filefunc64U(&ffunc);
-	uf = unzOpen2_64(zipfile, &ffunc);
+	uf = unzOpen2_64(zipfile, &ffunc);  // this function seems ok in UNICODE mode
 	if(NULL == uf) 
 	{
 		return FALSE;
 	}
-	err = unzGetGlobalInfo64(uf, &gi);
-	if(UNZ_OK != err)
+	ret = unzGetGlobalInfo64(uf, &gi);
+	if(UNZ_OK != ret)
 	{
 		unzClose(uf);
 		return FALSE;
@@ -775,9 +768,8 @@ char buffer[8192] = {0};
 	{
 		current_percent = (WORD)((i * 100) / gi.number_entry);
 		PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, NULL, MAKELPARAM(current_percent, total_percent));
-		Sleep(10);
-		err = unzGetCurrentFileInfo64(uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
-		if(UNZ_OK != err)
+		ret = unzGetCurrentFileInfo64(uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0);
+		if(UNZ_OK != ret)
 		{
 			unzClose(uf);
 			return FALSE;
@@ -785,32 +777,33 @@ char buffer[8192] = {0};
 		p = filename_withoutpath = filename_inzip;
 		while ((*p) != '\0')
 		{
-			if (((*p)=='/') || ((*p)=='\\'))
-				filename_withoutpath = p+1;
+			if (((*p)=='/') || ((*p)=='\\')) filename_withoutpath = p+1;
 			p++;
 		}
+		memset(unicode_path, 0, sizeof(unicode_path));
+		MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)filename_inzip, MAX_PATH, unicode_path, MAX_PATH);
 		if ((*filename_withoutpath)=='\0')
 		{
-			_mkdir(filename_inzip);
+			_tmkdir(unicode_path);
 		}
 		else
 		{
-			err = unzOpenCurrentFilePassword(uf, NULL);
-			if(UNZ_OK == err)
+			ret = unzOpenCurrentFile(uf);
+			if(UNZ_OK == ret)
 			{
-				fout = fopen64(filename_inzip, "wb");
+				_tfopen_s(&fout, unicode_path, _T("wb"));
 				if(NULL != fout)
 				{
 					do
 					{
-						err = unzReadCurrentFile(uf, buffer, 8192);
-						if(err < 0) break;
-						if(fwrite(buffer, err, 1, fout) != 1)
+						ret = unzReadCurrentFile(uf, buffer, WRITEBUFFERSIZE);
+						if(ret < 0) break;
+						if(fwrite(buffer, ret, 1, fout) != 1)
 						{
-							err = UNZ_ERRNO;
+							ret = UNZ_ERRNO;
 							break;
 						}
-					}while (err>0);
+					}while (ret>0);
 
 					fclose(fout);
 					unzCloseCurrentFile(uf);
@@ -819,8 +812,8 @@ char buffer[8192] = {0};
 		}
 		if(i+1 < gi.number_entry)
 		{
-			err = unzGoToNextFile(uf);
-			if(UNZ_OK != err)
+			ret = unzGoToNextFile(uf);
+			if(UNZ_OK != ret)
 			{
 				unzClose(uf);
 				return FALSE;
@@ -860,8 +853,7 @@ WORD total_percent;
 		
 		total_percent = (WORD)(current*100)/total;
 		PostMessage(hWndUI, WM_PROGRESS_UNZIP_SHOW, (WPARAM)(g_tblVZIP[i].name), MAKELPARAM(0, total_percent));
-		//Sleep(1000);
-		if(bbk_unzip(hWndUI, current, total,g_tblVZIP[i].name))
+		if(unzip_video_file(hWndUI, current, total,g_tblVZIP[i].name))
 		{
 			current++;
 			g_tblVZIP[i].unzip = TRUE;

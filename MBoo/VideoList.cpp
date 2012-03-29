@@ -289,7 +289,7 @@ TCHAR msg[VIDEO_TITLE_MAX_LEN * 2];
 			if(0 != p->sid)
 				_stprintf_s(msg, VIDEO_TITLE_MAX_LEN*2, _T("[%s]:µÚ%d¼¯ - %s"), p->name, p->idx, p->title);
 			else
-				_stprintf_s(msg, VIDEO_TITLE_MAX_LEN*2, _T("[%s]: %s"), p->name, p->title);
+				_stprintf_s(msg, VIDEO_TITLE_MAX_LEN*2, _T("[%s]: %s - %s"), p->name, p->tutor, p->title);
 
 			ti2 = ti1.AddTail(msg, 0);
 			ti2.SetData((DWORD_PTR)p);

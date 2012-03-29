@@ -319,8 +319,11 @@ TCHAR  name[VIDEO_FILENAME_MAX_LEN + 4 + 1];  // bbk01234567890.zip
 		if(INVALID_HANDLE_VALUE == hFind) continue;
 		if(0 != (FILE_ATTRIBUTE_DIRECTORY & findata.dwFileAttributes))
 		{
-			g_tblVZIP[i].unzip = TRUE;
-			unzip++;
+			if(is_valid_bbk_video(name, NULL))
+			{
+				g_tblVZIP[i].unzip = TRUE;
+				unzip++;
+			}
 		}
 	}
 	if(unzip == count) return FALSE;
