@@ -1,6 +1,7 @@
 #ifndef _MB_VIDEODATA_H_
 #define _MB_VIDEODATA_H_
 
+/* The work thread for specified task*/
 void thread_update_videoinfo(void* data);
 void thread_query_videoinfo(void* data);
 void thread_unzip_videofile(void* data);

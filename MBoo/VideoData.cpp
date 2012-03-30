@@ -247,7 +247,6 @@ sqlite3 *db;
 sqlite3_stmt *stmt = NULL;
 LPCTSTR pvid = NULL;
 int rc;
-UINT idx;
 TCHAR path[MAX_PATH] = {0};
 TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 
@@ -274,16 +273,10 @@ TCHAR sql[SQL_STMT_MAX_LEN] = {0};
 		if(SQLITE_ROW != rc) break;
 
 		pvid = (LPCTSTR)sqlite3_column_text16(stmt,0); // vid
-		idx = get_hash_index(pvid);
-		p = g_ptblV[idx];
-		while(NULL != p)
+		p = lookup_video(pvid);  // lookup the video hash table to find this video record
+		if(NULL != p)
 		{
-			if(0 == _tcscmp(p->name, pvid))
-			{
-				p->db = TRUE;
-				break;
-			}
-			p = p->next;
+			p->db = TRUE;
 		}
 	}
 	sqlite3_finalize(stmt);
@@ -519,7 +512,6 @@ CURLcode res;
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "MBoo Player v1.0");
 		curl_easy_setopt(curl, CURLOPT_URL, CT2A(g_configInfo.url));
-		//curl_easy_setopt(curl, CURLOPT_URL, CT2A(_T("http://192.168.137.188/x.php")));
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, rqst_buf);
 		curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20);
@@ -538,22 +530,22 @@ int i, count;
 	hWndUI = (HWND)data;
 	if(NULL == hWndUI)	return;
 
-	::PostMessage(hWndUI, WM_PROGRESS_SYNC_SHOW, 0, 10);
+	PostMessage(hWndUI, WM_PROGRESS_SYNC_SHOW, 0, 10);
 	Sleep(500);
 	count = scan_video_files();
 	if(0 == count)
 	{
-		::PostMessage(hWndUI, WM_PROGRESS_SYNC_SHOW, 0, 0);
-		::PostMessage(hWndUI, WM_PROGRESS_SYNC_UPDATE, 100, 100);
+		PostMessage(hWndUI, WM_PROGRESS_SYNC_SHOW, 0, 0);
+		PostMessage(hWndUI, WM_PROGRESS_SYNC_UPDATE, 100, 100);
 		return;  // no video found
 	}
-	::PostMessage(hWndUI, WM_PROGRESS_SYNC_UPDATE, 100, 40);  // show 40% in the UI
+	PostMessage(hWndUI, WM_PROGRESS_SYNC_UPDATE, 100, 40);  // show 40% in the UI
 	Sleep(500);
 	if( 0 == g_configInfo.update_mode)
 	{
 		check_videodb_info();
 	}
-	::PostMessage(hWndUI, WM_PROGRESS_SYNC_UPDATE, 100, 50); 
+	PostMessage(hWndUI, WM_PROGRESS_SYNC_UPDATE, 100, 50); 
 	Sleep(500);
 
 	memset(request_buf, 0, sizeof(request_buf));
@@ -573,32 +565,21 @@ int i, count;
 		}
 	}
 	strcat_s(request_buf, REQUEST_BUFFER_MAX_LEN, "BBKEND");
-	//::MessageBoxA(hWndUI, request_buf, "", MB_OK); 
-	// test
-	//memset(request_buf, 0, sizeof(request_buf));
-	//strcat_s(request_buf, REQUEST_BUFFER_MAX_LEN, "q=BBKBEGIN|bbk1109|bbk1110|BBKEND");
+
 	memset(&bbk_result, 0, sizeof(BBKRESULT));
 
 	send_request_to_bbk(request_buf);
 
-	::PostMessage(hWndUI, WM_PROGRESS_SYNC_UPDATE, 100, 90);  // show 20% in the UI
+	PostMessage(hWndUI, WM_PROGRESS_SYNC_UPDATE, 100, 90);  // show 90% in the UI
 	Sleep(1000);
-	//::MessageBox(hWndUI, response_buf, _T(""), MB_OK); 
 
 	update_video_database(&bbk_result);
 
 	// The task has been finished!
-	::PostMessage(hWndUI, WM_PROGRESS_SYNC_UPDATE, 100, 100);
+	PostMessage(hWndUI, WM_PROGRESS_SYNC_UPDATE, 100, 100);
 	Sleep(1000);
-	::PostMessage(hWndUI, WM_PROGRESS_SYNC_SHOW, 0, 0);
+	PostMessage(hWndUI, WM_PROGRESS_SYNC_SHOW, 0, 0);
 
-/*
-	for(i=8; i<10; i++)
-	{
-		::PostMessage(hWndUI, WM_PROGRESS_SYNC_UPDATE, 100, i*10); 
-		Sleep(500);
-	}
-*/
 }
 
 
@@ -606,7 +587,6 @@ void thread_query_videoinfo(void* data)
 {
 HWND hWndUI;
 int count;
-//UINT idx;
 RECVIDEO *p, *current, *pVNode = NULL;
 sqlite3 *db;
 sqlite3_stmt *stmt0 = NULL;
