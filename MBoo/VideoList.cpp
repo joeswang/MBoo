@@ -10,6 +10,7 @@
 #include "VideoList.h"
 #include "VideoData.h"
 
+
 LRESULT CVideoList::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	CProgressBarCtrl pgs = GetDlgItem(IDC_LIST_PGS_SYNC);
@@ -228,7 +229,6 @@ BOOL CVideoList::WindowMove(UINT x, UINT y, UINT cx, UINT cy)
 
 LRESULT CVideoList::OnBtnSyncVideo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-
 	CButton btnSync = GetDlgItem(IDC_LIST_BTN_SYNC);
 	btnSync.EnableWindow(FALSE);
 

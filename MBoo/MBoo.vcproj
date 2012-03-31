@@ -49,6 +49,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="../deps/openssl/include"
 				PreprocessorDefinitions="WIN32;_WINDOWS;STRICT;_DEBUG;ZLIB_WINAPI"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -192,6 +193,78 @@
 				>
 			</File>
 			<File
+				RelativePath=".\swflib\bbk_atomic.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_fileio.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_gear.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_hash.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_log.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_pools.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\DlgOption.cpp"
 				>
 			</File>
@@ -318,6 +391,38 @@
 			>
 			<File
 				RelativePath=".\AboutDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_allocator.h"
+				>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_atomic.h"
+				>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_fileio.h"
+				>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_gear.h"
+				>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_hash.h"
+				>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_log.h"
+				>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_pools.h"
+				>
+			</File>
+			<File
+				RelativePath=".\swflib\bbk_types.h"
 				>
 			</File>
 			<File
